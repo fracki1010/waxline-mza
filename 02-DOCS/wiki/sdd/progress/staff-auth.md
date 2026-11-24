@@ -1,6 +1,6 @@
 # staff-auth — progress ledger
 
-Stage: base done, spec drafted (approved in autopilot), next: clarify.
+Stage: spec clarified (approved in autopilot), next: plan (spike on iOS cross-site session first).
 
 ## Decision queue
 
@@ -11,3 +11,6 @@ Stage: base done, spec drafted (approved in autopilot), next: clarify.
 - [review-after] Q5 — spec approved in autopilot, not item by item, 02-DOCS/wiki/sdd/specs/staff-auth.md, specify
 - [review-after] Q6 — no human-approved reference for the sign-in screen; acceptance criteria used as mechanical reference, spec section "What result they get", specify
 - [review-after] Q7 — assumed 14-day session, 5 attempts per 15 minutes lockout, single role, username sign-in, owner-created first account, spec Points to clarify, specify
+- [review-after] Q8 — sign-in UI language assumed Spanish (Argentina), spec Points to clarify, clarify
+- [review-after] Q9 — lockout counted per username, can lock out a real colleague for 15 minutes, spec Points to clarify, clarify
+- [blocking] Q10 — iOS PWA cross-site session must be proven by a spike and a manual phone check before tasks; fallback same registrable domain, spec Points to clarify, plan
