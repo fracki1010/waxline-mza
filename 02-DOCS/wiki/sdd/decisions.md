@@ -17,3 +17,9 @@
 ## 2026-11-24 — Spec staff-auth drafted
 - Scope: sign in, stay signed in, sign out, lockout. Out: roles, account screens, reset, 2FA.
 - Objection recorded, not blocking: managed sign-in (Firebase Authentication) would avoid storing passwords; kept own accounts per the owner's MERN choice (constitution 16).
+
+## 2026-11-24 — Plan staff-auth
+- Sessions: server-side in MongoDB, opaque id in an HttpOnly Secure SameSite=Lax cookie. Chosen over stateless tokens so sign-out and revocation are real.
+- Deployment: front end and API under one registrable domain (Option A) so the cookie is first-party. Option B (different domains, token in page storage) only as a recorded exception.
+- Passwords: argon2id.
+- Isolation: straight on main, no worktree (owner's workflow decision; no other session in this folder).

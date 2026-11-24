@@ -15,3 +15,4 @@
 | staff-auth progress and decision queue | `02-DOCS/wiki/sdd/progress/staff-auth.md` |
 | SDD runtime config | `02-DOCS/wiki/sdd/config.yaml` |
 | Spec — Staff sign-in | `02-DOCS/wiki/sdd/specs/staff-auth.md` |
+| Plan — Staff sign-in | `02-DOCS/wiki/sdd/plans/staff-auth.md` |

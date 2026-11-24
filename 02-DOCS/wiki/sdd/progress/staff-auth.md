@@ -14,3 +14,5 @@ Stage: spec clarified (approved in autopilot), next: plan (spike on iOS cross-si
 - [review-after] Q8 — sign-in UI language assumed Spanish (Argentina), spec Points to clarify, clarify
 - [review-after] Q9 — lockout counted per username, can lock out a real colleague for 15 minutes, spec Points to clarify, clarify
 - [blocking] Q10 — iOS PWA cross-site session must be proven by a spike and a manual phone check before tasks; fallback same registrable domain, spec Points to clarify, plan
+- [blocking] Q11 — owner must say whether they own a domain (Option A needs one) before spike S0 and tasks, plan section 7 risk 2, plan
+- [review-after] Q12 — plan chose server-side sessions in MongoDB and argon2id, plan section 2, plan
