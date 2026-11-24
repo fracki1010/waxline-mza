@@ -23,3 +23,6 @@
 - Deployment: front end and API under one registrable domain (Option A) so the cookie is first-party. Option B (different domains, token in page storage) only as a recorded exception.
 - Passwords: argon2id.
 - Isolation: straight on main, no worktree (owner's workflow decision; no other session in this folder).
+
+## 2026-11-24 — Domain confirmed
+- The owner has a domain, so deployment Option A (same registrable domain) is viable. Spike S0 (iPhone check) still pending.
