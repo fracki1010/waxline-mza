@@ -16,3 +16,7 @@ Stage: spec clarified (approved in autopilot), next: plan (spike on iOS cross-si
 - [blocking] Q10 — iOS PWA cross-site session must be proven by a spike and a manual phone check before tasks; fallback same registrable domain, spec Points to clarify, plan
 - [resolved 2026-11-24] Q11 — owner confirmed they own a domain, so Option A is viable. Was: owner must say whether they own a domain (Option A needs one) before spike S0 and tasks, plan section 7 risk 2, plan
 - [review-after] Q12 — plan chose server-side sessions in MongoDB and argon2id, plan section 2, plan
+- [resolved 2026-11-24] Q10 — cross-site question replaced: one origin via Hosting rewrite; spike S0 is now task 0 and blocks all other implementation tasks, plan section 6, plan
+- [blocking] Q13 — owner must enable Blaze billing and create the Atlas cluster before deployment (step 8) and the spike, plan section 6, plan
+- [review-after] Q14 — constitution v1.1.0 struck principles 4 and 18, added 22-25, constitution
+- [review-after] Q15 — Atlas allow-list likely open to all addresses because Cloud Run has no fixed egress, plan section 7 risk 3, plan

@@ -46,8 +46,8 @@ A person with a staff account can sign in with their username and password, stay
 After a correct sign-in the person lands on the app's home screen showing their name; after sign-out they land on the sign-in screen. The reference is mechanical because no human sketch exists yet: the observable outcomes in the acceptance criteria below are the reference (screen shown, access allowed or refused). A `review-after` entry asks the human to confirm the sign-in screen look later.
 
 ## What it must respect
-- Constitution principles 14-18: no secret committed, every route except sign-in and health requires a signed-in staff member, passwords stored only hashed, inputs validated, CORS limited to the front-end origin.
-- The front end and server live on different addresses (decision log 2026-11-24), so sign-in must work across them, including on an installed PWA.
+- Constitution principles 14-17 and 22-25: no secret committed, every route except sign-in and health requires a signed-in staff member, passwords stored only hashed, inputs validated, front end and API reached through a single address over HTTPS.
+- Sign-in must keep working on an installed PWA, including after the phone app is closed and reopened (decision log 2026-11-24).
 - Nothing about the existence of a username may leak through error messages, status codes or response shape.
 - Refusals use the constitution's single error shape (principle 10) and the server is reached over HTTPS only (principle 18).
 
@@ -78,7 +78,7 @@ Automated integration tests, one per acceptance criterion, run with the project'
 - **suposición tomada** — the first account is created by the owner outside the app. *Base:* no account screens are in scope. *Riesgo:* every new employee needs the owner's technical help until account screens are built.
 - **suposición tomada** — the sign-in screen and its messages are in Spanish (Argentina). *Base:* Mendoza car-wash staff; the human writes to the agent in Spanish. *Riesgo:* if English is wanted, only copy changes; the criteria quote message meaning, not wording.
 - **suposición tomada** — lockout is counted per username and unknown usernames are counted the same way. *Base:* avoids revealing which usernames exist. *Riesgo:* someone can lock a real colleague out for 15 minutes by typing wrong passwords.
-- **pregunta abierta** — whether a PWA installed on iOS keeps the session when the front end and server are on different addresses; browsers may restrict cross-site storage. Sharp now, resolved at plan time. *Gate:* a planning spike plus one manual check on a real phone must answer it before `tasks`; if it fails, the fallback is serving front end and server under the same registrable domain.
+- **pregunta abierta** — whether an installed PWA on iOS keeps the session across closing and reopening the app. With one address (decision log 2026-11-24) this is much less likely to fail, but it is unverified. *Gate:* a spike on a real iPhone is the first task and blocks every other implementation task.
 - **decisión diferida** — account management screens, roles, password reset; each is its own later feature.
 - **suposición tomada** — the objection to building this: Firebase Hosting already offers a managed sign-in service that would avoid storing passwords on the owner's server. *Base:* the owner chose own-server backend and own accounts (MERN, constitution 16). *Riesgo:* running own password storage is more security work; if it proves heavy, switching providers is a MAJOR amendment.
 
@@ -94,3 +94,5 @@ Automated integration tests, one per acceptance criterion, run with the project'
   - iOS cross-site session → upgraded from unformulable to open question with a gate before `tasks` and a stated fallback.
   - Spanish type labels in an English document → kept: they are the labels `rsc spec gate` and `clarify` read.
 - Points to clarify outcomes: five original assumptions validated (held); the cross-site point graduated to a gated open question; deferred decision left alone.
+
+- 2026-11-24 · Owner moved the whole app to Firebase (Cloud Run behind Hosting, MongoDB on Atlas). Front end and API now share one address, so the cross-site concern became a narrower question: does an installed iOS PWA keep the session. The spike stays as task 0 and still blocks the rest. Constitution v1.1.0.

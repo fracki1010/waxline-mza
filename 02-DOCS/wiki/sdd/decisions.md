@@ -26,3 +26,8 @@
 
 ## 2026-11-24 — Domain confirmed
 - The owner has a domain, so deployment Option A (same registrable domain) is viable. Spike S0 (iPhone check) still pending.
+
+## 2026-11-24 — Deployment moved to Firebase (constitution v1.1.0)
+- Options: own server + Firebase front (two origins), Cloud Run + Atlas behind Hosting, Firestore + Firebase Auth. Chosen by the owner: Cloud Run + Atlas, keep MERN.
+- Why: one origin makes the session cookie first-party and removes CORS and domain setup. Verified in Firebase docs: Hosting forwards only the `__session` cookie to Cloud Run and Cloud Run rewrites need a billing account (Blaze).
+- Consequence: the `204.168.212.79` server is no longer used for this app; spike S0 is now task 0 on a real iPhone.
