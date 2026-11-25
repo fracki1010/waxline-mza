@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <title>Cookie spike</title>
+  <style>
+    body { font: 16px system-ui, sans-serif; margin: 16px; }
+    button { font: inherit; min-height: 44px; margin: 4px 4px 4px 0; padding: 0 16px; }
+    pre { background: #f2f2f2; padding: 12px; overflow: auto; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>Cookie spike</h1>
+  <p>Display mode: <strong id="mode"></strong></p>
+  <button id="set">1. Set cookie</button>
+  <button id="read">2. Read cookie</button>
+  <button id="clear">Clear cookie</button>
+  <pre id="out">Tap "Read cookie" after closing and reopening the app.</pre>
+  <script>
+    const out = document.getElementById('out');
+    document.getElementById('mode').textContent =
+      (navigator.standalone || matchMedia('(display-mode: standalone)').matches) ? 'standalone (installed)' : 'browser tab';
+    async function call(path) {
+      try {
+        const res = await fetch(path, { credentials: 'same-origin' });
+        out.textContent = `${path} -> ${res.status}\n` + JSON.stringify(await res.json(), null, 2);
+      } catch (err) {
+        out.textContent = `${path} failed: ${err}`;
+      }
+    }
+    document.getElementById('set').onclick = () => call('/api/spike/set');
+    document.getElementById('read').onclick = () => call('/api/spike/read');
+    document.getElementById('clear').onclick = () => call('/api/spike/clear');
+  </script>
+</body>
+</html>
