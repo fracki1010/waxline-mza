@@ -6,6 +6,7 @@ tags: [sdd, spec]
 timestamp: 2026-11-24T00:00:00Z
 topic: sdd
 slug: staff-auth
+branch: main
 status: clarified
 ---
 

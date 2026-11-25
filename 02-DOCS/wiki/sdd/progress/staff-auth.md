@@ -42,3 +42,15 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 
 ## T002 — 2026-11-25 (correction)
 - status: complete. Owner approved the tier-2 slice in chat; committed as a143f95 on main; the pre-commit hook ran and passed.
+- [review-after] Q22 — T004 security review: T010 must bound password length (1024), reject non-well-formed Unicode, normalize NFKC in one helper used by sign-in and create-staff, cap in-flight verifications at 4 and limit the body to 10 kB; NFKC folds compatibility characters, which is the NIST 800-63B recommendation, plan T009/T010, T004
+
+## T003-T004 — 2026-11-25
+- status: built, reviewed (2 rounds), awaiting human approval of the final diff (tier 2)
+- red: stub module failed on assertions (5 of 6 failed); later rewrite verified by mutation instead
+- green: backend 17 tests passing, hash.ts 100% lines (91% branches), lint and typecheck clean
+- mutation: 26 mutants in round 1 (20 survived the first tests); after the rewrite 19 of 20 re-run mutants die and the survivor is equivalent; round 2 reviewer ran 28 mutants, 4 equivalent survivors
+- files: backend/src/services/hash.ts, backend/test/hash.test.ts
+- risk: tier 2 (auth class, `timingSafeEqual`), panel of 3 recorded; round 1: 8 findings (4 fixed, 2 parked to T010, 2 intentional); round 2: 2 nits (1 fixed, 1 intentional)
+- design: Node built-in `crypto.argon2` (no dependency), argon2id m=19456 t=2 p=1, PHC string, parameters read from the stored hash with caps
+- controls: tests ok, lint ok, typecheck ok, traceability ok (AC2, AC3), security scan not run (`npm audit` not executed, no new dependency added)
+- parked to T010: bound password length, reject non-well-formed Unicode, NFKC helper, cap in-flight verifications, 10 kB body (plan T009/T010, Q22)
