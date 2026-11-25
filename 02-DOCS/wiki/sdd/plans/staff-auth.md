@@ -11,7 +11,7 @@ status: draft
 
 # Plan — Staff sign-in
 
-> Spec: [staff-auth](../specs/staff-auth.md) · Constitution: [v1.0.0 provisional](../constitution.md)
+> Spec: [staff-auth](../specs/staff-auth.md) · Constitution: [v1.1.0 provisional](../constitution.md)
 > Revision 2026-11-24: deployment moved to Cloud Run + Atlas behind Firebase Hosting (constitution v1.1.0).
 > Isolation: work goes straight on `main` (owner's decision at install, constitution principle 12); no worktree because no other session works in this folder.
 
@@ -20,9 +20,9 @@ status: draft
 - Session lifetime: 14 days since last use (sliding). Expiry is checked in code on every request; database TTL cleanup is housekeeping only.
 - Lockout: 5 failed sign-ins per username within 15 minutes, counted per lower-cased username whether or not it exists; locked response is HTTP 429, code `LOCKED`.
 - Wrong or unknown username/password: HTTP 401, code `INVALID_CREDENTIALS`, same message text and body shape. Unknown username still pays one password-hash comparison against a dummy hash.
-- No session: HTTP 401, code `UNAUTHENTICATED`.
+- No session: HTTP 401, code `UNAUTHENTICATED`. Invalid input (wrong types, operator objects such as `{ "$ne": null }`): HTTP 400, code `VALIDATION_ERROR`. State-changing request whose `Origin` is not the app's own: HTTP 403, code `FORBIDDEN_ORIGIN`.
 - Error body, always: `{ "error": { "code": string, "message": string } }`.
-- Session cookie: named `__session` (the only cookie Firebase Hosting forwards to the API), `HttpOnly; Secure; SameSite=Lax; Path=/`, value is an opaque random id (at least 32 random bytes), nothing else.
+- Session cookie: named `__session` (the only cookie Firebase Hosting forwards to the API), `HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=1209600` (14 days, so the browser keeps it after the app is closed), value is an opaque random id (at least 32 random bytes), nothing else.
 - Auth responses carry `Cache-Control: no-store`. CORS is disabled; front end and API share one origin.
 - Password hash: argon2id with a per-password salt; the hash is never logged or returned.
 - UI copy in Spanish (Argentina), kept in one messages module.
@@ -30,7 +30,7 @@ status: draft
 
 ## 1. Context & constraints
 
-- Spec acceptance criteria AC1-AC9, numbered in order of the spec's list (`spec §Acceptance criteria`), define the behaviour; constitution 14-18 fix the security floor.
+- Spec acceptance criteria AC1-AC9, numbered in order of the spec's list (`spec §Acceptance criteria`), define the behaviour; constitution 14-17 and 22-25 fix the security floor.
 - Front end on Firebase Hosting, API as a Cloud Run container reached through a Hosting rewrite of `/api/**`, MongoDB on Atlas (decision log 2026-11-24, constitution 22-25). One origin; the main design pressure is that Hosting strips every cookie except `__session` before the API.
 - Constitution 3: the signed-in user is server state, so it lives in TanStack Query. Zustand holds nothing for this feature.
 
@@ -44,11 +44,11 @@ status: draft
                                    [Cloud Run: Express container: backend/] --> [MongoDB Atlas]
 ```
 
-- `backend/auth`: sign-in, sign-out, current user, `requireStaff` middleware. One responsibility: decide who is calling.
-- `backend/lockout`: counts failed attempts per username window.
-- `backend/staff`: staff accounts (internal) plus a command-line script to create the first account.
-- `frontend/features/auth`: sign-in screen, session query, route guard, sign-out action.
-- `frontend/shared/api`: one fetch wrapper that calls same-origin `/api/...` and turns any 401 into "session lost".
+- `backend/src/routes/auth` and `backend/src/services/{auth,sessions,hash}`: sign-in, sign-out, current user, `requireStaff` middleware. One responsibility: decide who is calling.
+- `backend/src/services/lockout`: counts failed attempts per username window; a fixed window starting at the first failure.
+- `backend/src/models/staff` (staff accounts) plus `backend/scripts/create-staff` to create the first account.
+- `frontend/src/features/auth`: sign-in screen, session query, route guard, sign-out action.
+- `frontend/src/shared/api`: one fetch wrapper that calls same-origin `/api/...` and turns any 401 into "session lost". In development, the Vite dev server proxies `/api` to the local API, since CORS stays off.
 - `frontend` PWA shell: manifest + service worker so the app is installable (constitution 20). The service worker never caches `/api/**`.
 
 **Key decision: one origin through a Hosting rewrite.** Hosting serves the front end and forwards `/api/**` to the Cloud Run service, so the browser only ever talks to one address. The session cookie is therefore first-party, no CORS is needed and there is no domain to buy or connect. Server-side sessions in MongoDB make sign-out and revocation real.
@@ -65,7 +65,7 @@ signIn(username, password) -> Session | InvalidCredentials | Locked
   - on success: creates a session record, sets the cookie, clears the attempt count
 currentUser(cookie) -> StaffUser{id, displayName} | Unauthenticated
   - valid only if the session exists and last-used is within 14 days
-  - refreshes last-used when older than 1 hour (cheap sliding window)
+  - refreshes last-used when older than 1 hour (cheap sliding window) and, in the same step, re-sends the cookie with a fresh `Max-Age=1209600`; "last use" therefore has one-hour granularity
 signOut(cookie) -> void
   - deletes that session record only; other devices keep theirs
 requireStaff(request) -> attaches StaffUser | 401 UNAUTHENTICATED
@@ -99,7 +99,7 @@ Database for integration tests: a real in-memory MongoDB, so unique and TTL inde
 
 ## 6. Sequencing & dependencies
 
-0. **Spike S0 (first task, blocks every other implementation task):** deploy a throwaway Hosting page and Cloud Run endpoint that sets and reads a `__session` cookie; confirm on a real iPhone (Safari, then installed PWA, then close and reopen) that it survives. Human step: a real phone and the Firebase project.
+0. **Spike S0 (first task, blocks every other implementation task):** deploy a throwaway Hosting page and Cloud Run endpoint that sets and reads a `__session` cookie; confirm on a real iPhone (Safari, then installed PWA, then close and reopen) that it survives. Human step: a real phone and the Firebase project; needs Q13 resolved (Blaze billing, Atlas cluster). If it fails: stop every task, record the evidence and return to `plan`; the candidate fallbacks are a short-lived token kept in the app's storage (weakens constitution 17) or a managed sign-in (Firebase Authentication); either is a constitution amendment the owner must approve.
 1. Repo foundation: `backend/` and `frontend/` packages, TypeScript strict, ESLint, Prettier, Vitest, `.env.example`, `.gitignore` entries.
 2. Backend core: staff model, hashing, session store, lockout, injectable clock.
 3. Backend routes and `requireStaff`, error shape, health route, `no-store` on auth responses.
@@ -137,27 +137,31 @@ Rollback: the feature is additive with no data migration for other features; rev
 
 | ID | [P] | Task | Done-check | Depends-on | Trace | Risk |
 | --- | --- | --- | --- | --- | --- | --- |
-| T001 |  | Run spike S0: throwaway Hosting page + Cloud Run endpoint that sets and reads a `__session` cookie | Manual on a real iPhone: Safari, then installed PWA, close and reopen, cookie still read back; result recorded in `verifications/` | — | AC5 | 1 |
-| T002 |  | Add repo foundation: `backend/` and `frontend/` packages, strict TS, ESLint, Prettier, Vitest, `.env.example`, `.gitignore` | In both packages `npm run lint`, `npm run typecheck` and `npm test` exit 0 on a smoke test | T001 | AC1-AC9 (enabler) | 2 |
-| T003 | [P] | Write failing tests for password hashing and dummy comparison | `npm test -w backend -- hash` fails: module missing | T002 | AC2, AC3 | 2 |
+| T001 |  | Run spike S0: throwaway Hosting page + Cloud Run endpoint that sets and reads a `__session` cookie | Manual on a real iPhone: Safari, then installed PWA, close and reopen, cookie still read back; result recorded in `verifications/` | Q13 resolved (Blaze, Atlas, project id) | AC5 | 1 |
+| T002 |  | Add repo foundation: `backend/` and `frontend/` packages (one lockfile each), strict TS, ESLint, Prettier, Vitest with coverage, `.nvmrc`, pre-commit hook, `.env.example`, `.gitignore` | In both packages `npm run lint`, `npm run typecheck` and `npm test` exit 0 on a smoke test; `.nvmrc` and `engines` present; coverage threshold 70% configured; a pre-commit hook runs lint, typecheck and tests | T001 | AC1-AC9 (enabler) | 2 |
+| T003 | [P] | Write failing tests for password hashing and dummy comparison | `npm --prefix backend test -- hash` fails: module missing | T002 | AC2, AC3 | 2 |
 | T004 |  | Implement password hashing (argon2id) and dummy hash | T003 green; hash differs per call; wrong password false | T003 | AC2, AC3 | 2 |
-| T005 | [P] | Write failing tests for lockout (5 in 15 min, per username, unknown the same, injectable clock) | `npm test -w backend -- lockout` fails: module missing | T002 | AC7 | 2 |
+| T005 | [P] | Write failing tests for lockout (5 in 15 min, per username, unknown the same, injectable clock) | `npm --prefix backend test -- lockout` fails: module missing | T002 | AC7 | 2 |
 | T006 |  | Implement lockout store | T005 green incl. 6th attempt refused and window expiry | T005 | AC7 | 2 |
-| T007 | [P] | Write failing tests for sessions (create, resolve, 14-day sliding expiry checked in code, destroy) | `npm test -w backend -- sessions` fails: module missing | T002 | AC5, AC6, AC8 | 2 |
+| T007 | [P] | Write failing tests for sessions (create, resolve, 14-day sliding expiry checked in code, destroy) | `npm --prefix backend test -- sessions` fails: module missing | T002 | AC5, AC6, AC8 | 2 |
 | T008 |  | Implement session store | T007 green incl. day 13 valid, day 15 refused with record still present | T007 | AC5, AC6, AC8 | 2 |
-| T009 |  | Write failing route tests: sign-in, me, sign-out, `requireStaff`, error shape, same response for wrong and unknown, `no-store`, cookie named `__session` with flags | `npm test -w backend -- routes` fails: routes missing | T004, T006, T008 | AC1-AC4, AC6, AC9 | 2 |
-| T010 |  | Implement auth routes, `requireStaff` and health route | T009 green; unauthenticated call to any other route returns 401 | T009 | AC1-AC4, AC6, AC9 | 2 |
-| T011 |  | Add create-first-account script (password from interactive prompt, never argv) | Test: script stores a hash and never echoes or logs the password; sign-in with it succeeds in a route test | T010 | AC1 (enabler) | 1 (path), expect 2 (password handling) |
-| T012 | [P] | Add frontend shell: Vite app, PWA manifest and service worker, fetch wrapper, Spanish messages module | `npm run build -w frontend` exits 0; test asserts the worker never caches `/api/**` | T002 | AC5 (enabler) | 1 |
-| T013 |  | Write failing frontend tests: guard shows sign-in on 401, sign-in renders the name, sign-out returns to sign-in | `npm test -w frontend -- auth` fails: feature missing | T012 | AC1, AC4, AC6 | 2 |
+| T018 |  | Add staff model and lookup by lower-cased username (unique index) with its tests | `npm --prefix backend test -- staff` green; a duplicate username is rejected; lookup of an unknown name returns null | T002 | AC1-AC3 (enabler) | 2 |
+| T009 |  | Write failing route tests for every criterion: sign-in, me, sign-out, `requireStaff`, same response for wrong and unknown, sixth attempt gets 429 `LOCKED` even with the right password and unknown names lock the same, `/me` valid at day 13 and 401 at day 15 with the record present, cookie named `__session` with `Max-Age` and flags, `no-store`, error shape, `{ "$ne": null }` as username gives 400 `VALIDATION_ERROR`, foreign `Origin` on a POST gives 403 `FORBIDDEN_ORIGIN` | `npm --prefix backend test -- routes` fails: routes missing | T004, T006, T008, T018 | AC1-AC9, constitution 17 | 2 |
+| T010 |  | Implement auth routes, input validation, origin check, `requireStaff` and health route | T009 green; unauthenticated call to any other route returns 401 | T009 | AC1-AC9, constitution 17 | 2 |
+| T011 |  | Add create-first-account script (password from interactive prompt, never argv) | Test: script stores a hash and never echoes or logs the password; sign-in with it succeeds in a route test | T010, T018 | AC1 (enabler) | 1 (path), expect 2 (password handling) |
+| T012 | [P] | Add frontend shell: Vite app with `/api` dev proxy, PWA manifest and service worker, fetch wrapper, Spanish messages module | `npm --prefix frontend run build` exits 0 and the output holds a web manifest and a service worker file; test asserts the worker never caches `/api/**` | T002 | AC5, constitution 20 (enabler) | 1 |
+| T013 |  | Write failing frontend tests: guard shows sign-in on 401, sign-in renders the name, sign-out returns to sign-in | `npm --prefix frontend test -- auth` fails: feature missing | T012 | AC1, AC4, AC6 | 2 |
 | T014 |  | Implement frontend auth (session query, sign-in screen, guard, sign-out) | T013 green; typecheck and lint clean | T013 | AC1, AC4, AC6 | 2 |
+| T019 |  | Add accessibility and offline checks for the sign-in screen: labelled fields, visible focus, touch targets of 44px or more, clear message when the API is unreachable | `npm --prefix frontend test -- a11y` passes with zero violations from the axe checker; a test shows the offline message when fetch rejects | T014 | AC1, constitution 19 and 20 | 1 |
 | T015 |  | Add deployment config: API Dockerfile, Hosting rewrite for `/api/**`, `.firebaserc`, secret-based Atlas connection, proxy trust setting | Container builds locally and `GET /api/health` returns 200 from it; `firebase.json` rewrite validates | T010, T014 | AC9 | 1 (path), expect 2 (secrets) |
-| T016 |  | Deploy and run the integration pass on the real URL plus the manual phone check | One line per AC1-AC9 recorded in `verifications/staff-auth-<date>.md`; AC5 checked on a real iPhone | T011, T015 | AC1-AC9 | 2 |
+| T016 |  | Deploy and run the integration pass on the real URL plus the manual phone check | One line per AC1-AC9 recorded in `verifications/staff-auth-<date>.md`; AC5 checked on a real iPhone; the deployed app passes the browser's installability check | T011, T015, T019 | AC1-AC9, constitution 20 | 2 |
 | T017 |  | Closer: every done-check above passes and the verify gate is green | Every row checked with its evidence; `npx @ericrisco/rsc spec gate` PASS; lint, typecheck and tests exit 0 in both packages | all | all ACs | — |
 
 **T001 — Interfaces**
 - Consumes: Firebase project id (human), Blaze billing and Atlas cluster (Q13).
 - Produces: a recorded yes/no on "installed iOS PWA keeps `__session`"; throwaway files under `spike/` deleted afterwards.
+
+**Test-first tasks** T003, T005, T007, T009 and T013 use the Interfaces block of the implementation task they precede (T004, T006, T008, T010, T014).
 
 **T004 — Interfaces**
 - Produces: `hashPassword(plain: string): Promise<string>`, `verifyPassword(plain: string, hash: string): Promise<boolean>`, `DUMMY_HASH: string` (a valid argon2id hash of a random value, created at start-up).
@@ -169,8 +173,18 @@ Rollback: the feature is additive with no data migration for other features; rev
 - Produces: `create(staffId: string, now: Date): Promise<{ id: string }>` (id is the raw cookie value, stored only as a hash), `resolve(id: string, now: Date): Promise<{ staffId: string } | null>`, `destroy(id: string): Promise<void>`; constants `SESSION_DAYS = 14`, `TOUCH_AFTER_MS = 3600000`.
 
 **T010 — Interfaces**
-- Consumes: T004, T006, T008 signatures above.
-- Produces: `POST /api/auth/sign-in` body `{ username: string, password: string }` → `200 { user: { id: string, displayName: string } }` with `Set-Cookie: __session=...`, or `401 { error: { code: "INVALID_CREDENTIALS", message } }`, or `429 { error: { code: "LOCKED", message } }`; `GET /api/auth/me` → `200 { user: { id, displayName } }` or `401 { error: { code: "UNAUTHENTICATED", message } }`; `POST /api/auth/sign-out` → `204`; `GET /api/health` → `200 { status: "ok" }`.
+- Consumes: T004, T006, T008 and T018 signatures above.
+- Produces: `POST /api/auth/sign-in` body `{ username: string, password: string }` → `200 { user: { id: string, displayName: string } }` with `Set-Cookie: __session=...; Max-Age=1209600`, or `400 VALIDATION_ERROR`, `401 INVALID_CREDENTIALS`, `429 LOCKED`, `403 FORBIDDEN_ORIGIN` (all as `{ error: { code, message } }`); `GET /api/auth/me` → `200 { user: { id, displayName } }` or `401 { error: { code: "UNAUTHENTICATED", message } }`; `POST /api/auth/sign-out` → `204`; `GET /api/health` → `200 { status: "ok" }`.
+
+**T011 — Interfaces**
+- Consumes: `hashPassword` (T004) and the staff model (T018).
+- Produces: `npm --prefix backend run create-staff -- <username> <displayName>`, which asks for the password on a hidden prompt and exits 0 on success, 1 if the username exists.
+
+**T012 — Interfaces**
+- Produces: `apiFetch(path: string, init?: RequestInit): Promise<Response>` (same-origin, sends cookies, throws `SessionLostError` on 401); `messages` (Spanish, Argentina) keyed by string id.
+
+**T018 — Interfaces**
+- Produces: `findByUsername(username: string): Promise<{ id: string; displayName: string; passwordHash: string } | null>` (trims and lower-cases inside); `createStaff(input: { username: string; displayName: string; passwordHash: string }): Promise<{ id: string }>`, rejects a duplicate username.
 
 **T014 — Interfaces**
 - Consumes: the T010 HTTP contract; all calls are same-origin `/api/...` with cookies sent.
@@ -182,7 +196,7 @@ Rollback: the feature is additive with no data migration for other features; rev
 | --- | --- | --- |
 | Estimated changed lines | 1,800 to 2,500 | two packages, three auth modules with tests, routes, UI, config |
 | Files / areas | about 40 files across backend auth, routes, scripts, frontend shell and auth, deployment config | |
-| Risk | max tier 2; 12 of 17 tasks are tier 2 by path | tier-2 tasks need the three-refuter panel and a human merge approval |
-| Suggested delivery | ask-on-risk | far over the 400-line budget; work lands on `main` as one work-unit commit per slice (T002; T003-T004; T005-T006; T007-T008; T009-T010; T011; T012; T013-T014; T015; T016-T017) |
+| Risk | max tier 2; 14 of 19 tasks are tier 2 by path | tier-2 tasks need the three-refuter panel and a human merge approval |
+| Suggested delivery | ask-on-risk | far over the 400-line budget; work lands on `main` as one work-unit commit per slice (T002; T003-T004; T005-T006; T007-T008; T018; T009-T010; T011; T012; T013-T014; T019; T015; T016-T017) |
 
 Chained PRs recommended: Yes (size), but the owner's workflow commits straight to `main`, so the split would be work-unit commits, not PRs. Decision needed before apply: Yes.
