@@ -80,3 +80,6 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 - risk: tier 1 by `rsc risk` on the real files (plan forecast was 2). One fresh all-lens reviewer: 0 blockers, 2 should-fix (invalid now fails open; staffId unchecked), 3 nits. Round 2 was NOT an independent re-review: the delta was a clock guard, a staffId check and an exported validator, verified by 11 mutants
 - controls: tests ok, lint ok, typecheck ok, traceability ok (AC5, AC6, AC8), security scan not run (`npm audit` not executed; no new dependency)
 - pushed to T010: cookie re-send only when touched, clear on null and on sign-out, id only from cookie, staff record re-check, single injected now (plan T010 row, risk 12)
+
+## T007-T008 — 2026-11-25 (correction)
+- status: complete. Owner approved in chat; committed as 21179d1 on main; the pre-commit hook ran and passed.
