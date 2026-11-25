@@ -4,16 +4,13 @@ Question: does an installed iOS PWA keep the `__session` cookie after being clos
 
 Delete this folder after the result is recorded in `02-DOCS/wiki/sdd/verifications/`.
 
-## Owner steps (the agent does not run these)
+## Deploy (needs the Blaze plan on project `waxline-mza`)
 
-Prerequisites: Blaze billing on the Firebase project `waxline-mza`, `gcloud` and `firebase` logged in with your account.
+The API runs as a Firebase function (HTTP, 2nd gen, which Firebase runs on Cloud Run) behind a Hosting rewrite of `/api/**`. The production container on Cloud Run is validated later, in T015.
 
 ```bash
-# 1. Deploy the API container to Cloud Run (from the spike/ folder)
-gcloud run deploy spike-api --source . --region us-central1 --allow-unauthenticated --project waxline-mza
-
-# 2. Deploy Hosting with the /api/** rewrite
-npx firebase-tools deploy --only hosting --project waxline-mza
+cd spike
+firebase deploy --only hosting,functions --project waxline-mza --account fracki1010@gmail.com
 ```
 
 ## Phone test (real iPhone)

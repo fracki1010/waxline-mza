@@ -1,6 +1,5 @@
-// Throwaway spike (T001): proves a `__session` cookie survives Hosting -> Cloud Run on a real iPhone.
-// No dependencies on purpose. Delete the whole spike/ folder once the result is recorded.
-const http = require('node:http');
+// Throwaway spike (T001): proves a `__session` cookie survives a Hosting rewrite on a real iPhone.
+// Delete the whole spike/ folder once the result is recorded.
 const crypto = require('node:crypto');
 
 const MAX_AGE = 14 * 24 * 3600;
@@ -16,8 +15,7 @@ function send(res, status, body, extra = {}) {
   res.end(JSON.stringify(body));
 }
 
-http
-  .createServer((req, res) => {
+module.exports = (req, res) => {
     const url = req.url.split('?')[0];
     if (url === '/api/spike/set') {
       const value = crypto.randomBytes(16).toString('hex');
@@ -42,5 +40,4 @@ http
       });
     }
     return send(res, 404, { error: { code: 'NOT_FOUND', message: 'Not found' } });
-  })
-  .listen(process.env.PORT || 8080);
+};
