@@ -142,3 +142,11 @@ describe("lockout", () => {
     expect(ttl[0]?.expireAfterSeconds).toBe(0);
   });
 });
+
+describe("lockout clock guard", () => {
+  it("rejects an invalid clock instead of failing open", async () => {
+    await expect(lockout.recordFailure("a", new Date(Number.NaN))).rejects.toThrow(TypeError);
+    await expect(lockout.isLocked("a", new Date(Number.NaN))).rejects.toThrow(TypeError);
+    expect(await db.collection("signInAttempts").countDocuments()).toBe(0);
+  });
+});

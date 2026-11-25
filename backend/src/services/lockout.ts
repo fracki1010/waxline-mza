@@ -1,4 +1,5 @@
 import type { Db } from "mongodb";
+import { assertValidNow } from "./clock.js";
 import { normaliseUsername } from "./username.js";
 
 const WINDOW_MS = 15 * 60 * 1000;
@@ -45,6 +46,7 @@ export function createLockout(db: Db) {
 
   return {
     async isLocked(username: string, now: Date): Promise<boolean> {
+      assertValidNow(now);
       const doc = await attempts.findOne({ _id: normaliseUsername(username) });
       return (
         doc !== null &&
@@ -54,6 +56,7 @@ export function createLockout(db: Db) {
     },
 
     async recordFailure(username: string, now: Date): Promise<void> {
+      assertValidNow(now);
       await upsertFailure(normaliseUsername(username), now);
     },
 

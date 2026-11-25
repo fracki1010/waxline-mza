@@ -52,3 +52,8 @@ Context   — the plan gave `isLocked/recordFailure/clear` without saying how th
 Options    — module-level functions with a global db, a factory taking `db`, a class.
 Decision   — `createLockout(db)` returns the three functions; `ensureLockoutIndexes(db)` creates the TTL index; `normaliseUsername` lives in `services/username.ts` and is reused by T018.
 Why        — explicit dependency like `createApp`, testable with `startTestDb`, and one definition of the key. The dead duplicate-key retry was removed: MongoDB retries `_id`-equality upserts itself (checked on mongo:7).
+
+## 2026-11-25 — Invalid clock fails closed in every time-dependent service  (feature: staff-auth, task: T007-T008)
+Context   — a NaN `now` is stored by the Mongo driver as 1970, which made every session resolve as valid and a lockout never lock. The lockout review had called it a nit; the sessions review showed it is a fail-open.
+Decision   — `assertValidNow` in `services/clock.ts` throws `TypeError`; called by `sessions.create/resolve` and `lockout.isLocked/recordFailure`. `create` also rejects a `staffId` that is not a non-empty string.
+Why        — fix the bug class, not the line. Routes must treat a thrown TypeError as a 500 that denies access, never as "allow".
