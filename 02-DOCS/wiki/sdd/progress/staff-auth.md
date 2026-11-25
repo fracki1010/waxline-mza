@@ -67,3 +67,6 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 - risk: tier 1 by `rsc risk` on the real files (plan forecast was 2; the computed tier wins). One fresh all-lens reviewer: 3 nits (dead retry removed, shared normaliser extracted, invalid `now` guard skipped). Round 2 was NOT an independent re-review: the delta was a deletion of a branch proven dead plus moving a one-line function, verified by tests and mutants
 - controls: tests ok, lint ok, typecheck ok, traceability ok (AC7), security scan not run (`npm audit` not executed; no new dependency)
 - pushed to later tasks: username type and length 1-64 (T009/T010), startup `ensureLockoutIndexes` (T010), T018 reuses `normaliseUsername`
+
+## T005-T006 — 2026-11-25 (correction)
+- status: complete. Owner approved in chat; committed on main; the pre-commit hook ran and passed.
