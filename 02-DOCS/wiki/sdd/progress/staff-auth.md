@@ -1,6 +1,6 @@
 # staff-auth — progress ledger
 
-Stage: spec clarified (approved in autopilot), next: plan (spike on iOS cross-site session first).
+Stage: tasks written and analyzed (PASS), next: implement T001 (spike), blocked on Q13.
 
 ## Decision queue
 
@@ -22,5 +22,5 @@ Stage: spec clarified (approved in autopilot), next: plan (spike on iOS cross-si
 - [review-after] Q15 — Atlas allow-list likely open to all addresses because Cloud Run has no fixed egress, plan section 7 risk 3, plan
 - [review-after] Q16 — lockout window fixed from first failure; last use measured with one-hour granularity; cookie Max-Age 14 days, spec Points to clarify, analyze
 - [review-after] Q17 — analyze found 4 HIGH issues; fixed by adding T018 and T019, route-level tests for AC5/AC7/AC8, cookie Max-Age, CSRF origin check and a spike fallback, plan Tasks, analyze
-- [blocking] Q18 — owner must choose how to split the ~2,000-line change into work-unit commits on main before implement (plan Review Workload Forecast), plan, tasks
+- [resolved 2026-11-24] Q18 — owner chose one work-unit commit per slice on main (T002; T003-T004; T005-T006; T007-T008; T018; T009-T010; T011; T012; T013-T014; T019; T015; T016-T017). Was: owner must choose how to split the ~2,000-line change into work-unit commits on main before implement (plan Review Workload Forecast), plan, tasks
 - [review-after] Q19 — analyze run 2 passed with 8 MEDIUM; F1-F5 and F8 folded into plan and tasks, the rest accepted (F6 HTTPS only manual, F7 axe cannot check 44px or focus under jsdom), analyze
