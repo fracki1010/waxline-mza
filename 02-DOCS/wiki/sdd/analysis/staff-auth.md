@@ -1,88 +1,90 @@
 ---
 type: analysis
-title: Analysis — Staff sign-in
-description: Pre-implementation consistency gate for staff-auth, cross-reading constitution v1.1.0, spec, plan and tasks.
-tags: [sdd, analyze]
-timestamp: 2026-11-24T00:00:00Z
+title: Analysis — Staff sign-in (pre-implementation gate, run 2)
+description: Cross-read of constitution v1.1.0, spec, plan and tasks T001-T019 for staff-auth; findings ranked.
+tags: [sdd, analysis]
+timestamp: 2026-11-25T00:17:14Z
 topic: sdd
 slug: staff-auth
 ---
 
-# Analysis — Staff sign-in
+# Analysis — Staff sign-in (run 2, judged from scratch)
 
-Inputs: [constitution v1.1.0](../constitution.md), [spec](../specs/staff-auth.md), [plan + tasks](../plans/staff-auth.md), [decision queue](../progress/staff-auth.md) (context only). Report only; nothing was edited.
+Inputs: [constitution v1.1.0](../constitution.md), [spec](../specs/staff-auth.md), [plan + tasks](../plans/staff-auth.md), [progress queue](../progress/staff-auth.md) (context only). AC1-AC9 follow the spec list order.
 
-**GATE: BLOCKED** — CRITICAL 0 · HIGH 4 · MEDIUM 8 · LOW 3 (15 findings).
+**GATE: PASS** — CRITICAL 0, HIGH 0, MEDIUM 8, LOW 10. The MEDIUM items should be fixed or consciously accepted before `implement`; none makes the artifacts un-implementable.
 
-## Coverage map (spec AC1-AC9)
+## Constitution check (analysis 1)
 
-| AC | Spec requirement (short) | Plan section | Task(s) | Status |
-| --- | --- | --- | --- | --- |
-| AC1 | Correct sign-in shows name | §3 signIn, §4 flow, §5 row 1 | T009, T010, T011 (enabler), T013, T014, T016 | covered (but see F2: staff lookup has no task) |
-| AC2 | Wrong password refused, generic | §0, §3, §5 rows 2-3 | T003, T004, T009, T010 | covered |
-| AC3 | Unknown user indistinguishable | §0, §3 (dummy hash), §5 rows 2-3 | T003, T004, T009, T010 | covered |
-| AC4 | Signed-out access refused, sign-in screen shown | §3 requireStaff, §5 row 4 | T009, T010, T013, T014 | covered |
-| AC5 | Still signed in within 14 days | §0, §3 currentUser, §4, §5 row 5 | T001, T007, T008, T012 (enabler) | **GAP at route level, and contradicted by the cookie definition (F1, F3)** |
-| AC6 | Sign-out ends that session only | §3 signOut, §5 row 6 | T007, T008, T009, T010, T013, T014 | covered |
-| AC7 | Lockout 5 in 15 min, "try later" | §0, §3, §4 signInAttempts, §5 row 7 | T005, T006 | **GAP: no route-level task (F3)** |
-| AC8 | Session unused > 14 days expires | §0, §5 row 8 | T007, T008 | **GAP: no route-level task (F3)** |
-| AC9 | Refusals use error shape, over HTTPS | §0, §5 row 9 | T009, T010, T015, T016 | covered |
+No CRITICAL breach found. Verified compliant: cookie `__session` (§0, T009, principle 24); CORS disabled and one origin (§0, §2, principles 22, 25); `/api` prefix on every route (§3); one lockfile per package (T002, principle 5); 70% coverage configured (T002, principle 8); installable PWA (T012, T016, principle 20); principles 14-17 (T002, T009, T010, T011). Residual issues are the MEDIUM/LOW items below (principles 9, 19, 24, 25).
 
-Backward (task or plan item with no criterion):
+## Requirement coverage map
 
-| Item | Traces to | Status |
-| --- | --- | --- |
-| T002 repo foundation | AC1-AC9 (enabler) | ok, names the criteria |
-| T011 first-account script | AC1 (enabler) | ok |
-| T012 frontend shell and service worker | "AC5 (enabler)" | weak: its real driver is constitution 20 (installable PWA). Acceptable, but see F4 |
-| Plan §7 risk 6 CSRF origin check | none | plan commitment with no task (F6) |
-| Staff model/store (plan §4, §6 step 2) | AC1-AC3 | needed, but no task exists (F2) |
+```text
+REQ | Spec requirement                  | Plan section            | Task(s)                              | Status
+--- | --------------------------------- | ----------------------- | ------------------------------------ | ---------
+AC1 | Correct sign-in, home shows name  | §0, §3 signIn, §5 r1    | T018,T009,T010,T011,T013,T014,T019   | covered (home screen unowned, F7)
+AC2 | Wrong password, generic message   | §0, §3, §5 r2-3         | T003,T004,T009,T010                  | covered (UI message untested, F1)
+AC3 | Unknown user same response        | §0, §3, §5 r2-3, risk 8 | T003,T004,T018,T009,T010             | covered (dummy-hash path test, F14)
+AC4 | Signed-out refused, sign-in shown | §0, §3 requireStaff, §5 | T009,T010,T013,T014                  | covered
+AC5 | Signed in within 14 days of use   | §0, §3 currentUser, §5  | T001,T007,T008,T009,T010,T012        | AMBIGUOUS (sliding untested, F5)
+AC6 | Sign-out ends session on device   | §3 signOut, §5 r6       | T007,T008,T009,T013,T014             | covered (other-device test not in T009 text, F5)
+AC7 | Lockout 5 in 15 min               | §0, §4, §5 r7           | T005,T006,T009,T010                  | covered (UI message untested, F1)
+AC8 | Expired after 14 days             | §0, §3, §5 r8           | T007,T008,T009,T010                  | covered
+AC9 | Refusal shape + HTTPS             | §0, §5 r9, §7 risk 7    | T009,T010,T015,T016                  | AMBIGUOUS (HTTPS manual only, F6)
+```
+
+Reverse trace (tasks to spec, constitution or stated enablement): every task row carries a Trace. No task lacks one. Origin check and `no-store` are traced loosely (F13).
 
 ## Findings
 
 | # | Severity | Type | Artifact A (loc) | Artifact B (loc) | Conflict | Resolve in |
 | --- | --- | --- | --- | --- | --- | --- |
-| F1 | HIGH | Contradiction | Spec AC5 + Goals ("stays signed in on phone or desktop", "close and reopen") | Plan §0 session cookie: `HttpOnly; Secure; SameSite=Lax; Path=/`, no `Max-Age`/`Expires`; T009 done-check "cookie ... with flags" | A cookie with no lifetime is a browser-session cookie. Desktop browsers drop it on close, so AC5 fails for desktop users, and installed-PWA behaviour is left to chance (the S0 spike tests exactly this, but the plan fixes no lifetime to test). A sliding 14-day session also needs the cookie re-issued on touch. Why it matters: the headline goal can fail while every server-side test is green. | plan (cookie lifetime and re-issue rule), then tasks (done-check) |
-| F2 | HIGH | Gap / carrier | Plan §4 `staff` collection, §6 step 2 "staff model"; §3 `currentUser` returns `{id, displayName}` | Tasks: no task builds the staff model or lookup. T010 Interfaces consumes only T004/T006/T008; T008 `resolve` returns `{staffId}` only; T011 "stores a hash" assumes a store exists | The staff store (unique lower-cased username, find by username, find by id for displayName) is silently absorbed into T009/T010/T011 with no done-check and no Interfaces block. Isolated workers will each invent it. | tasks (add a staff store test/impl pair, with Interfaces) |
-| F3 | HIGH | Coverage gap | Spec "How it proves it" (integration test per criterion); Plan §5 rows 5, 7, 8 (integration, injectable clock) | T009 Trace `AC1-AC4, AC6, AC9`, T010 same; no task traces AC5, AC7, AC8 beyond the unit-level T005-T008 | Lockout wiring into sign-in (check first, record failure, clear on success, 429 `LOCKED`), the day-13/day-15 `/auth/me` behaviour and the sliding touch in `requireStaff` have no route-level test and no task that builds them. T009's test list does not mention lockout, 429 or expiry. T016 only records a manual line per AC. | tasks (extend T009/T010 trace and test list) |
-| F4 | HIGH | Constitution compliance (omission) | Constitution 19 (WCAG 2.2 AA, labelled controls, focus, 44px), 20 (installable PWA, "clear error offline"), Definition of Done lines 8-9 | Plan §2 mentions only manifest + worker; T012-T014 done-checks cover build, `/api` not cached, and behaviour only | No task or done-check carries accessibility or the offline error. The sign-in screen is the only UI, so the floor lands entirely here; verify at closing cannot go green on the DoD as tasks stand. Manifest validity/installability is not checked either. | tasks (add done-checks to T012-T014); plan §5 (a11y/offline rows) |
-| F5 | MEDIUM | Underspecified | Constitution 10, 17 (validate every body/query/param; no raw objects into Mongo) | Plan §0 error codes: only `INVALID_CREDENTIALS`, `LOCKED`, `UNAUTHENTICATED`; T009 test list has no malformed-body or `{"$gt": ""}` case | No error code or status for an invalid request body, and no test for NoSQL operator injection on username/password. | plan §0 (add a validation code), tasks (T009) |
-| F6 | MEDIUM | Gap (plan to tasks) | Plan §7 risk 6: "origin check on state-changing routes", JSON-only bodies | No task implements or tests it | A named security mitigation will not ship. `SameSite=Lax` covers part of it; the origin check and a JSON content-type enforcement need an owner. | tasks (or drop from plan) |
-| F7 | MEDIUM | Carrier completeness | `../tasks` Per-task Interfaces rule; analyze isolated-implementer check | Interfaces exist for T001, T004, T006, T008, T010, T014 only. Missing: T003, T005, T007, T009, T013 (tests-first tasks whose worker never sees the implementation task's signatures, e.g. T009 needs the T010 HTTP contract), T011 (needs hash + staff store signatures), T014 does not consume T012's fetch wrapper or messages module, T012 has no Produces | A blind worker writing T009 or T013 sees only its own row. Section 0 exists and is good; the per-task carriers do not. | tasks |
-| F8 | MEDIUM | Contradiction + underspecified | Constitution 5 ("one committed lockfile per package"), 1 (`engines` + `.nvmrc`), 8 (coverage ≥ 70%), 12 (pre-commit gate of 6-8) | Task done-checks use `npm test -w backend` / `-w frontend` (npm workspaces imply a root package and one root lockfile); T002 lists no `.nvmrc`, `engines`, coverage threshold, pre-commit hook or in-memory MongoDB harness (plan §5) | Workspaces and per-package lockfiles pull in opposite directions; four constitutional tooling rules and the Mongo test harness have no home in T002. | plan/tasks (pick one layout, widen T002); constitution only if workspaces are wanted |
-| F9 | MEDIUM | Constitution compliance | Constitution 9: `backend/src/{routes,services,models}` | Plan §2 modules `backend/auth`, `backend/lockout`, `backend/staff`; no task names file paths | The plan's module names do not map onto the mandated layout. | plan §2 |
-| F10 | MEDIUM | Ordering / ambiguity | Queue Q13 `[blocking]` (Blaze + Atlas before spike and step 8); spec line 81 "spike first, blocks every implementation task" | T001 `Depends-on: —`, Q13 appears only in T001's Interfaces prose; T015/T016 do not list it; plan has no branch if S0 fails (spec Clarifications line 94 promised "a stated fallback") | Q10 is correctly folded into T001 and T002 depends on T001, so everything is blocked transitively, which is intended. But the human prerequisite is invisible to anyone reading the Depends-on column, and a failed spike leaves T002-T017 with no defined path. | tasks (record Q13 as a precondition on T001 and T016), plan §7 risk 2 (fallback) |
-| F11 | MEDIUM | Gap | Constitution 25 (CORS disabled, same origin), plan §0 | T012 builds a same-origin fetch wrapper; no task adds a Vite dev proxy for `/api` or a local run instruction | In local development the Vite server and the API are different origins; with CORS off, the frontend cannot call the API, which invites someone to enable CORS. | tasks (T012 or T015) |
-| F12 | MEDIUM | Duplication / stale record | Progress ledger line 16 `[blocking] Q10` (cross-site, same registrable domain fallback, "before tasks") | Ledger line 19 `[resolved] Q10` (one origin, spike is task 0); header line 3 "next: plan" | Same ID twice, one still blocking, with a fallback (Option A) the plan has since dropped. A reader or tool counting blockers sees an extra one. | whoever owns the ledger (harness/progress), not a phase artifact |
-| F13 | LOW | Stale references | Plan header "Constitution: v1.0.0"; plan §1 "constitution 14-18"; spec "What it must respect" "(principle 18)"; spec Problem "front end and server are separate"; spec Clarifications line 94 "gate before `tasks`" | Constitution v1.1.0: 18 struck (now 25), single origin, spike is task 0 | Wording drift after the v1.1.0 amendment. No behavioural conflict. | plan / clarify |
-| F14 | LOW | Ambiguity | Spec AC5 "within 14 days of last use", AC7 "until the window passes" | Plan §3: touch only when older than 1 hour; §4 `windowStart` fixed window; T006 trims and lower-cases, staff lookup unspecified | Effective expiry can be up to 1 hour early versus true last use; fixed vs sliding lockout window and whether failures during lockout extend it are not stated; username normalisation must also apply to the staff lookup. | clarify (numbers), plan |
-| F15 | LOW | Minor | T010 done-check "any other route returns 401" (no other route exists yet); sign-out cookie-clearing unspecified; T015 SPA fallback rewrite must come after `/api/**`; T001 absent from the work-unit commit list; "Decision needed before apply: Yes" (delivery strategy) has no queue entry | | Small precision gaps. | tasks |
+| F1 | MEDIUM | Contradiction | Plan §2 shared/api bullet: "turns any 401 into 'session lost'"; T012 Interfaces: `apiFetch` "throws `SessionLostError` on 401" | T010 Interfaces: `POST /api/auth/sign-in` returns `401 INVALID_CREDENTIALS` | A wrong password at sign-in is a 401, so the wrapper would report "session lost" instead of the AC2 message. T013 has no test for the wrong-password or lockout message in the UI, so nothing catches it. | plan (wrapper rule), tasks (add T013 cases) |
+| F2 | MEDIUM | Ambiguity / carrier | Plan §0 (line 23): 403 `FORBIDDEN_ORIGIN` when `Origin` "is not the app's own" | T002 `.env.example`, T010, T015, T012: no config key, no source for the allowed origin | Behind Hosting the API sees the run.app host, not the public host; dev proxy origin differs. No rule for a missing `Origin` header or for dev. A blind implementer can ship an origin check that 403s every real sign-in. | plan (§0 + Interfaces) |
+| F3 | MEDIUM | Ambiguity / carrier | Plan §5 last paragraph: real in-memory MongoDB, injectable clock | T002 (smoke test only), T009/T010 Interfaces: no app factory, no clock or DB injection point | T009 is test-first for day 13, day 15 and sixth-attempt route tests but cannot be written without knowing how time and DB reach the app. Harness (mongodb-memory-server) has no owner task. | tasks / plan |
+| F4 | MEDIUM | Ambiguity / carrier | T015 (no Interfaces block) | T010, §0 (proxy trust), principle 23 | Env var names (Mongo URI, allowed origin), `PORT`, start command, trust-proxy value and Dockerfile location are unstated. T015 done-check is local only; real proxy behaviour waits for T016. | plan / tasks |
+| F5 | MEDIUM | Ambiguity | AC5 "within 14 days of their last use"; plan §3 currentUser (sliding, cookie re-sent) | T007/T008 done-check (day 13 valid, day 15 refused), T009 text, T008 Interfaces `resolve(): {staffId} \| null` | No test proves sliding expiry (use at day 10, still valid at day 20) or that the cookie is re-issued with fresh `Max-Age`; `resolve` cannot tell the route whether it touched the session. Plan §5 row 6 "another device keeps its session" is missing from T009's list. | tasks (done-checks), plan (T008 Interfaces) |
+| F6 | MEDIUM | Ambiguity | Spec AC9 "travels over HTTPS"; spec "How it proves it" (one automated test per AC) | Plan §5 row 9 asserts only the `Secure` flag; T009 lists "error shape"; T016 checks HTTPS by hand | HTTPS has no automated check. T009 does not list malformed JSON, unknown route (404) or unhandled error (500) shape, which Express answers in HTML by default. §0 says `Secure` is unconditional, risk 7 implies it depends on proxy trust. | tasks, plan |
+| F7 | MEDIUM | Ambiguity / constitution 19 | Principle 19 (focus, 44px targets, "changed UI") | T019 done-check: zero axe violations, sign-in screen only; T014 description omits the home screen | axe under jsdom cannot measure target size or focus visibility; nothing checks them on a device. AC1's home screen (name, sign-out control) is not named in T014 and not audited by T019. | tasks |
+| F8 | MEDIUM | Process / blocking queue | Plan Review Workload Forecast: "Decision needed before apply: Yes" (ask-on-risk) | Progress decision queue: no entry for the split-or-exception decision | The apply guard stops on it, and the queue shows no record of it. | user, then log in queue |
+| F9 | LOW | Wording | Plan Forecast: "14 of 19 tasks are tier 2 by path" | Task table: 13 tier-2 by path (15 if T011 and T015 "expect 2" are counted) | Count is wrong either way. | tasks |
+| F10 | LOW | Constitution 9, 6, 12 | Principle 9 layout (`routes`, `services`, `models`) | Plan §2: `requireStaff` placement, `backend/scripts/create-staff`, app bootstrap and error handler homes; plan §6 spike at `spike/` before the T002 pre-commit hook | Placement outside the three folders is unspecified. If spike files are committed before the hook, principle 6 and 12 are skipped. T015 later also owns `firebase.json`, which the spike needs first. | plan |
+| F11 | LOW | Stale reference | Spec "What it must respect" (line 52) cites HTTPS "(principle 18)" | Constitution: 18 struck, superseded by 25 | Points at a struck principle. Spec Clarifications line 95 also says "gate before `tasks`", now "first task". | clarify |
+| F12 | LOW | Stale / mismatch | Plan §6 step 7 (phone check on real deploy) before step 8 (deployment config); §5 PWA row "iPhone and Android" | Tasks: T015 before T016; T016 checks iPhone only | Plan order is stale (tasks are right); Android check dropped. | plan |
+| F13 | LOW | Trace precision | T009/T010 Trace "constitution 17" | Origin check (plan risk 6), `__session` and `no-store` (principles 24, 25) | Origin check serves no AC and cites no principle; tag it with risk 6 and 24-25, or accept it as plan-level hardening. | tasks |
+| F14 | LOW | Coverage of mitigations | Plan §7 risk 3 (least-privilege DB user, TLS), risk 8 (code-path test), "Significant decisions to log" (principle 21) | Tasks: no row owns them | Mitigations without a task will not happen. T009 does not assert the unknown-user path calls the dummy comparison. | tasks |
+| F15 | LOW | Duplication | `Max-Age=1209600` (§0, T010) vs `SESSION_DAYS = 14` (T008); `createStaff` in §3 (CLI) vs T018 (model function); §0 "lower-cased" vs T006/T018 "trimmed and lower-cased" | | Same values stated twice; one definition each avoids drift. | plan |
+| F16 | LOW | Underspecification | Principle 17 validation; §4 `signInAttempts` | T010: no max length for username or password | Unbounded input means unbounded argon2 work and unbounded attempt documents. | plan |
+| F17 | LOW | Underspecification | Principle 20 (installable) | T012: manifest and service worker only | Installability needs icons and `start_url`; no task owns them. T016 would find out late. | tasks |
+| F18 | LOW | Ambiguity | Plan §0 "everything except sign-in and health requires a session" | T010: sign-out returns 204 only | Sign-out without a valid session: 401 or 204? Whether the cookie is cleared is unstated. | plan |
 
-## Constitution check summary (v1.1.0)
+## Interfaces carrier check
 
-- Cookie `__session`, `no-store`, CORS disabled, same origin, `/api/**` prefix: consistent in plan §0, §2, §3, T009, T010, T015. Struck 4 and 18 are not relied on by tasks; only prose references remain (F13).
-- Principle 3 (TanStack Query, no Zustand): respected (plan §1, T014).
-- Principles 15, 16, 22-24: respected. Principles 1, 5, 8, 9, 12 (F8, F9), 17 (F5), 19, 20 (F4): not carried by tasks.
-- Spec vs plan values: session 14 days sliding, lockout 5/15 min per lower-cased username, 401 `INVALID_CREDENTIALS`, 429 `LOCKED`, 401 `UNAUTHENTICATED` agree, except the cookie lifetime (F1). The spec fixes no codes, so none can conflict.
+- §0 Global Constraints exists, with verbatim values.
+- Interfaces present: T001, T004, T006, T008, T010, T011, T012, T014, T018. Test-first tasks defer to their implementation task (stated).
+- Missing or thin: T015 (F4), the T010 app and clock injection (F3), T008 touch signal (F5), allowed-origin source (F2). T002, T016, T017, T019 are consumers or checks; acceptable.
+
+## Ordering against the blocking queue
+
+Q13 (blocking) is carried by T001's Depends-on; every other task depends on T001 directly or transitively (T002 on T001; T003, T005, T007, T012, T018 on T002; the rest follow). T015 and T016 (deployment) are reached through the same chain. T001 does not need Atlas for the spike itself, so Q13 over-blocks slightly; acceptable as written. Dependencies are acyclic; T009 correctly waits for T018. No ordering defect.
 
 ## Recommended routing
 
-- **plan**: F1 (cookie lifetime and re-issue), F5 (validation code), F9 (module paths), F10 (spike fallback), F13.
-- **tasks**: F2 (staff store pair), F3 (route-level AC5/AC7/AC8), F4 (a11y/offline/PWA done-checks), F6, F7 (Interfaces carriers), F8 (T002 scope), F10 (Q13 precondition), F11, F15.
-- **clarify**: F14 (window semantics, touch granularity).
-- **progress ledger owner**: F12.
-- No constitution amendment needed, unless the owner wants npm workspaces (F8).
-
-Findings are spread across plan and tasks but not across all six checks, so this is a targeted rework (plan, then tasks), not a re-run of clarify. Re-run `analyze` afterwards.
+- `plan`: F1 (wrapper rule), F2, F3 (app factory and clock), F4, F5 (T008 touch signal), F6, F10, F12, F15, F16, F18.
+- `tasks`: F1 (add UI message cases to T013), F3, F5 (done-checks), F6, F7, F9, F13, F14, F17.
+- `clarify`: F11.
+- user decision: F8 (chained commits or `size:exception`), then log it.
+- If left unfixed, the likely cost is at implement time: F1 and F2 produce a sign-in that fails on the real deploy while local tests pass; F3 stalls the first route test.
 
 ```json result-envelope
 {
   "status": "complete",
-  "executive_summary": "Gate blocked: 4 HIGH (cookie has no lifetime vs AC5, no staff store task, AC5/AC7/AC8 not traced to route-level tasks, a11y/offline floor uncarried), 8 MEDIUM, 3 LOW.",
+  "executive_summary": "GATE: PASS, 0 CRITICAL, 0 HIGH, 8 MEDIUM, 10 LOW. No constitution breach; AC1-AC9 all traced to plan and tasks.",
   "artifact": "02-DOCS/wiki/sdd/analysis/staff-auth.md",
-  "next_recommended": "plan",
+  "next_recommended": "implement",
   "risk": "medium",
-  "skill_resolution": { "used": ["analyze"], "missing": [], "fallback": [], "compact_rules": ["Report only.", "A finding without a location is an opinion."] },
-  "evidence": ["report path exists", "coverage map AC1-AC9", "constitution v1.1.0 checked"]
+  "skill_resolution": {"used": ["analyze"], "missing": [], "fallback": [], "compact_rules": []},
+  "evidence": ["report path exists", "findings carry artifact and location"]
 }
 ```
