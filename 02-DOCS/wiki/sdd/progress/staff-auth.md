@@ -54,3 +54,6 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 - design: Node built-in `crypto.argon2` (no dependency), argon2id m=19456 t=2 p=1, PHC string, parameters read from the stored hash with caps
 - controls: tests ok, lint ok, typecheck ok, traceability ok (AC2, AC3), security scan not run (`npm audit` not executed, no new dependency added)
 - parked to T010: bound password length, reject non-well-formed Unicode, NFKC helper, cap in-flight verifications, 10 kB body (plan T009/T010, Q22)
+
+## T003-T004 — 2026-11-25 (correction)
+- status: complete. Owner approved the final tier-2 diff in chat; committed as b361fe8 on main; the pre-commit hook ran and passed.
