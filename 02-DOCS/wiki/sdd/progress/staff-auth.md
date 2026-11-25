@@ -1,6 +1,6 @@
 # staff-auth — progress ledger
 
-Stage: tasks written and analyzed (PASS), next: implement T001 (spike), blocked on Q13.
+Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundation.
 
 ## Decision queue
 
@@ -17,7 +17,7 @@ Stage: tasks written and analyzed (PASS), next: implement T001 (spike), blocked 
 - [resolved 2026-11-24] Q11 — owner confirmed they own a domain, so Option A is viable. Was: owner must say whether they own a domain (Option A needs one) before spike S0 and tasks, plan section 7 risk 2, plan
 - [review-after] Q12 — plan chose server-side sessions in MongoDB and argon2id, plan section 2, plan
 - [resolved 2026-11-24] Q10 — cross-site question replaced: one origin via Hosting rewrite; spike S0 is now task 0 and blocks all other implementation tasks, plan section 6, plan
-- [blocking] Q13 — owner must enable Blaze billing and create the Atlas cluster before deployment (step 8) and the spike, plan section 6, plan
+- [partly resolved 2026-11-25] Q13 — Blaze enabled (spike deployed); Atlas cluster still to create before T015/T016. Was: owner must enable Blaze billing and create the Atlas cluster before deployment (step 8) and the spike, plan section 6, plan
 - [review-after] Q14 — constitution v1.1.0 struck principles 4 and 18, added 22-25, constitution
 - [review-after] Q15 — Atlas allow-list likely open to all addresses because Cloud Run has no fixed egress, plan section 7 risk 3, plan
 - [review-after] Q16 — lockout window fixed from first failure; last use measured with one-hour granularity; cookie Max-Age 14 days, spec Points to clarify, analyze
@@ -26,3 +26,5 @@ Stage: tasks written and analyzed (PASS), next: implement T001 (spike), blocked 
 - [review-after] Q19 — analyze run 2 passed with 8 MEDIUM; F1-F5 and F8 folded into plan and tasks, the rest accepted (F6 HTTPS only manual, F7 axe cannot check 44px or focus under jsdom), analyze
 - [note 2026-11-25] T001 spike NOT yet run: the reported fetch failure came from the page opened as a data: URL in the app's browser pane, not from the deployed site. No evidence yet about iOS and `__session`; T001 stays pending, spike page now disables itself outside http(s), spike
 - [note 2026-11-25] T001 server side verified with curl on https://waxline-mza.web.app (cookie passes, other cookies stripped); iPhone test still pending, verifications/staff-auth-spike-2026-11-25.md, spike
+- [done 2026-11-25] T001 — spike passed on a real iPhone (Safari, installed PWA, close and reopen); 1h and next-day checks repeated in T016, verifications/staff-auth-spike-2026-11-25.md, T001
+- [review-after] Q20 — iPhone result is owner-reported, not observed by the agent; spike resources (function api, hosting site) stay deployed until cleanup, T001
