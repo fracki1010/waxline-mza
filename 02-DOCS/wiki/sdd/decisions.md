@@ -34,3 +34,15 @@
 
 ## 2026-11-24 — Delivery
 - Owner chose one work-unit commit per slice directly on main for staff-auth (no size exception, no PRs). Tier-2 slices still need the owner's approval before they count as done.
+
+## 2026-11-25 — Backend test database is Docker mongo:7, not an in-memory binary  (feature: staff-auth, task: T002)
+Context   — the plan asked for an in-memory MongoDB; no local mongod exists and downloading a binary was not approved.
+Options    — mongodb-memory-server (downloads a mongod binary), Docker container from the already-pulled `mongo:7`, a mocked driver.
+Decision   — a real MongoDB in Docker on 127.0.0.1:27018 (`scripts/test-db.sh up|down`), started by the backend `pretest` script.
+Why        — real index and TTL behaviour with no download. Cost: tests and the pre-commit hook need Docker running.
+
+## 2026-11-25 — Git hooks live in .githooks  (feature: staff-auth, task: T002)
+Decision   — `core.hooksPath` is `.githooks` (repo-local, not shared by `git clone`); `.githooks/pre-commit` runs lint, typecheck and tests in both packages. rsc had installed no git hooks, so nothing is bypassed.
+
+## 2026-11-25 — Secrets ignore rules appended to the root .gitignore  (feature: staff-auth, task: T002)
+Decision   — `.env`, `.env.*` (except `.env.example`), `node_modules/`, `dist/`, `coverage/` appended below a "not managed by rsc" comment. `rsc repair` may rewrite that file; re-check it after any repair.

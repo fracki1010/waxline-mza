@@ -39,3 +39,11 @@
 .claude/commands/learn.md
 .claude/commands/resume-session.md
 .claude/commands/save-session.md
+
+# project rules (not managed by rsc): secrets and build output
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+coverage/

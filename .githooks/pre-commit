@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+for pkg in backend frontend; do
+  for s in lint typecheck test; do
+    echo "pre-commit: $pkg $s"
+    npm --prefix "$pkg" run "$s"
+  done
+done

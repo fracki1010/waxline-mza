@@ -95,7 +95,7 @@ HTTP surface (paths keep the `/api` prefix that Hosting forwards): `POST /api/au
 | 9 | Refusals use error shape over HTTPS | integration | body shape on all refusals; cookie has `Secure` | none |
 | PWA | Installed PWA keeps session | manual | recorded check on a real iPhone and an Android phone | none |
 
-Database for integration tests: a real in-memory MongoDB, so unique and TTL index behaviour is not faked. The clock is injected so no test sleeps.
+Database for integration tests: a real MongoDB running in a Docker container (`mongo:7`, started by `scripts/test-db.sh`), so unique and TTL index behaviour is not faked; tests and the pre-commit hook need Docker running (decision 2026-11-25). The clock is injected so no test sleeps.
 
 ## 6. Sequencing & dependencies
 
@@ -138,7 +138,7 @@ Rollback: the feature is additive with no data migration for other features; rev
 | ID | [P] | Task | Done-check | Depends-on | Trace | Risk |
 | --- | --- | --- | --- | --- | --- | --- |
 | T001 |  | Run spike S0: throwaway Hosting page + Cloud Run endpoint that sets and reads a `__session` cookie | Manual on a real iPhone: Safari, then installed PWA, close and reopen, cookie still read back; result recorded in `verifications/` | Q13 resolved (Blaze, Atlas, project id) | AC5 | 1 |
-| T002 |  | Add repo foundation: `backend/` and `frontend/` packages (one lockfile each), strict TS, ESLint, Prettier, Vitest with coverage, `.nvmrc`, pre-commit hook, `.env.example`, `.gitignore` | In both packages `npm run lint`, `npm run typecheck` and `npm test` exit 0 on a smoke test; `.nvmrc` and `engines` present; coverage threshold 70% configured; a pre-commit hook runs lint, typecheck and tests; the backend test harness exists (in-memory MongoDB helper, `createApp` factory, injectable clock) | T001 | AC1-AC9 (enabler) | 2 |
+| T002 |  | Add repo foundation: `backend/` and `frontend/` packages (one lockfile each), strict TS, ESLint, Prettier, Vitest with coverage, `.nvmrc`, pre-commit hook, `.env.example`, `.gitignore` | In both packages `npm run lint`, `npm run typecheck` and `npm test` exit 0 on a smoke test; `.nvmrc` and `engines` present; coverage threshold 70% configured; a pre-commit hook runs lint, typecheck and tests; the backend test harness exists (Docker-backed MongoDB helper, `createApp` factory, injectable clock) | T001 | AC1-AC9 (enabler) | 2 |
 | T003 | [P] | Write failing tests for password hashing and dummy comparison | `npm --prefix backend test -- hash` fails: module missing | T002 | AC2, AC3 | 2 |
 | T004 |  | Implement password hashing (argon2id) and dummy hash | T003 green; hash differs per call; wrong password false | T003 | AC2, AC3 | 2 |
 | T005 | [P] | Write failing tests for lockout (5 in 15 min, per username, unknown the same, injectable clock) | `npm --prefix backend test -- lockout` fails: module missing | T002 | AC7 | 2 |
@@ -164,7 +164,7 @@ Rollback: the feature is additive with no data migration for other features; rev
 **Test-first tasks** T003, T005, T007, T009 and T013 use the Interfaces block of the implementation task they precede (T004, T006, T008, T010, T014).
 
 **T002 — Interfaces**
-- Produces: `createApp(deps: { db: Db; now: () => Date; allowedOrigins: string[] }): Express` and a test helper `startTestDb(): Promise<{ db: Db; stop(): Promise<void> }>` backed by an in-memory MongoDB; routes and services take `now` instead of calling `new Date()`.
+- Produces: `createApp(deps: { db: Db; now: () => Date; allowedOrigins: string[] }): Express` and a test helper `startTestDb(): Promise<{ db: Db; stop(): Promise<void> }>` backed by a real MongoDB in Docker (`scripts/test-db.sh up`); routes and services take `now` instead of calling `new Date()`.
 
 **T004 — Interfaces**
 - Produces: `hashPassword(plain: string): Promise<string>`, `verifyPassword(plain: string, hash: string): Promise<boolean>`, `DUMMY_HASH: string` (a valid argon2id hash of a random value, created at start-up).

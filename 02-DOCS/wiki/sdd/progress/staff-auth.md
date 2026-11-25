@@ -28,3 +28,14 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 - [note 2026-11-25] T001 server side verified with curl on https://waxline-mza.web.app (cookie passes, other cookies stripped); iPhone test still pending, verifications/staff-auth-spike-2026-11-25.md, spike
 - [done 2026-11-25] T001 — spike passed on a real iPhone (Safari, installed PWA, close and reopen); 1h and next-day checks repeated in T016, verifications/staff-auth-spike-2026-11-25.md, T001
 - [review-after] Q20 — iPhone result is owner-reported, not observed by the agent; spike resources (function api, hosting site) stay deployed until cleanup, T001
+- [review-after] Q21 — T002 test DB is Docker mongo:7 instead of in-memory; tests and pre-commit need Docker, decisions.md 2026-11-25, T002
+
+## T002 — 2026-11-25
+- status: built, reviewed, awaiting human approval (tier 2) before the commit
+- red: backend smoke tests failed on the stubbed harness; after review, the new tests failed for x-powered-by (`expected 'Express' to be undefined`) and for missing `app.locals.deps`
+- green: backend 4 tests, frontend 1 test; coverage 100% lines in both (threshold 70% enforced, checked by raising it to 101)
+- mutation: removing `express.json()` makes the malformed-JSON test fail
+- files: .nvmrc, .env.example, README.md, scripts/test-db.sh, .githooks/pre-commit, root .gitignore (appended), backend/ and frontend/ packages
+- risk: tier 2 (secrets class via `.env.example`), computed by `rsc risk` on the real files; panel of 3 (correctness, security, tests) recorded; 10 findings round 1 (7 fixed, 2 intentional, 1 irrelevant); round 2: no findings
+- controls: tests ok (both packages), lint ok, typecheck ok, build ok (reported by the implementer, not re-run by me), traceability ok (enabler for AC1-AC9), security scan not run (`npm audit` not executed)
+- decision: Docker mongo:7 instead of in-memory (decisions.md), hook path `.githooks`, `.env` rules appended to the root `.gitignore`
