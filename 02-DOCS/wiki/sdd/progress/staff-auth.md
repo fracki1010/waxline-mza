@@ -39,3 +39,6 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 - risk: tier 2 (secrets class via `.env.example`), computed by `rsc risk` on the real files; panel of 3 (correctness, security, tests) recorded; 10 findings round 1 (7 fixed, 2 intentional, 1 irrelevant); round 2: no findings
 - controls: tests ok (both packages), lint ok, typecheck ok, build ok (reported by the implementer, not re-run by me), traceability ok (enabler for AC1-AC9), security scan not run (`npm audit` not executed)
 - decision: Docker mongo:7 instead of in-memory (decisions.md), hook path `.githooks`, `.env` rules appended to the root `.gitignore`
+
+## T002 — 2026-11-25 (correction)
+- status: complete. Owner approved the tier-2 slice in chat; committed as a143f95 on main; the pre-commit hook ran and passed.
