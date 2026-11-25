@@ -46,3 +46,9 @@ Decision   — `core.hooksPath` is `.githooks` (repo-local, not shared by `git c
 
 ## 2026-11-25 — Secrets ignore rules appended to the root .gitignore  (feature: staff-auth, task: T002)
 Decision   — `.env`, `.env.*` (except `.env.example`), `node_modules/`, `dist/`, `coverage/` appended below a "not managed by rsc" comment. `rsc repair` may rewrite that file; re-check it after any repair.
+
+## 2026-11-25 — Lockout store shape and shared username key  (feature: staff-auth, task: T005-T006)
+Context   — the plan gave `isLocked/recordFailure/clear` without saying how they reach the database, and the lockout and the staff lookup both need the same normalised username.
+Options    — module-level functions with a global db, a factory taking `db`, a class.
+Decision   — `createLockout(db)` returns the three functions; `ensureLockoutIndexes(db)` creates the TTL index; `normaliseUsername` lives in `services/username.ts` and is reused by T018.
+Why        — explicit dependency like `createApp`, testable with `startTestDb`, and one definition of the key. The dead duplicate-key retry was removed: MongoDB retries `_id`-equality upserts itself (checked on mongo:7).

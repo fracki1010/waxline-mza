@@ -57,3 +57,13 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 
 ## T003-T004 — 2026-11-25 (correction)
 - status: complete. Owner approved the final tier-2 diff in chat; committed as b361fe8 on main; the pre-commit hook ran and passed.
+
+## T005-T006 — 2026-11-25
+- status: built, reviewed, awaiting owner approval (rsc tier 1; approval requested anyway: brute-force protection)
+- red: stub failed 11 of 14 tests on assertions
+- green: backend 31 tests; lockout.ts 100% lines, 92% branches overall; lint and typecheck clean
+- mutation: implementer 12 of 12 killed; reviewer 22 mutants, survivors only equivalent (missing-type check) or about the removed retry branch; I re-ran the normaliser mutants after extracting it (2 of 2 regressions killed, the NFC addition is not pinned on purpose)
+- files: backend/src/services/lockout.ts, backend/src/services/username.ts, backend/test/lockout.test.ts
+- risk: tier 1 by `rsc risk` on the real files (plan forecast was 2; the computed tier wins). One fresh all-lens reviewer: 3 nits (dead retry removed, shared normaliser extracted, invalid `now` guard skipped). Round 2 was NOT an independent re-review: the delta was a deletion of a branch proven dead plus moving a one-line function, verified by tests and mutants
+- controls: tests ok, lint ok, typecheck ok, traceability ok (AC7), security scan not run (`npm audit` not executed; no new dependency)
+- pushed to later tasks: username type and length 1-64 (T009/T010), startup `ensureLockoutIndexes` (T010), T018 reuses `normaliseUsername`
