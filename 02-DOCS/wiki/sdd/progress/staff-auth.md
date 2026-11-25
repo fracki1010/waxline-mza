@@ -94,3 +94,6 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 - controls: tests ok, lint ok, typecheck ok, traceability ok (AC1-AC3 enabler), security scan not run (`npm audit` not executed; no new dependency)
 - pushed to T010: wire `ensureSessionIndexes` and `ensureStaffIndexes` at startup (plan T010 row); username length measured after trimming
 - parked, not done: NFC/NFKC and zero-width characters in usernames (look-alike names get separate accounts and lock buckets; staff-only, low impact; a change to `normaliseUsername` would touch the lockout too); `passwordHash` format not checked (caller's job); `instanceof MongoServerError` fails if two copies of `mongodb` load (accepted; the test pins it)
+
+## T018 — 2026-11-25 (correction)
+- status: complete. Owner approved in chat; committed on main; the pre-commit hook ran and passed.
