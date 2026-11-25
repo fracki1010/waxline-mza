@@ -83,3 +83,14 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 
 ## T007-T008 — 2026-11-25 (correction)
 - status: complete. Owner approved in chat; committed as 21179d1 on main; the pre-commit hook ran and passed.
+
+## T018 — 2026-11-25
+- status: built, reviewed, awaiting owner approval (rsc tier 1)
+- red: stub failed 7 of 10 tests on assertions; after review, the new display-name cap test failed 1 of 13 on an assertion before the guard existed
+- green: backend 64 tests; staff model 100% lines; lint and typecheck clean
+- mutation: implementer 18 mutants, 17 killed, 1 equivalent survivor (explicit username type check: `normaliseUsername(5)` already throws); reviewer fixes: 4 more mutants on the new cap and guard, all killed, file restored with cmp
+- files: backend/src/models/staff.ts, backend/test/staff.test.ts
+- risk: tier 1 by `rsc risk`. One fresh all-lens reviewer: 0 blockers, 4 should-fix, 9 nits. Fixed: misleading guard comment (reworded), query-never-reached test now spies on `findOne`, concurrent-duplicate test added, display name capped at 100, plan interface updated with `now`. Round 2 was NOT an independent re-review: verified by tests and mutants
+- controls: tests ok, lint ok, typecheck ok, traceability ok (AC1-AC3 enabler), security scan not run (`npm audit` not executed; no new dependency)
+- pushed to T010: wire `ensureSessionIndexes` and `ensureStaffIndexes` at startup (plan T010 row); username length measured after trimming
+- parked, not done: NFC/NFKC and zero-width characters in usernames (look-alike names get separate accounts and lock buckets; staff-only, low impact; a change to `normaliseUsername` would touch the lockout too); `passwordHash` format not checked (caller's job); `instanceof MongoServerError` fails if two copies of `mongodb` load (accepted; the test pins it)
