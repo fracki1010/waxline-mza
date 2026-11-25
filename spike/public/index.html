@@ -32,6 +32,10 @@
         out.textContent = `${path} failed: ${err}`;
       }
     }
+    if (!/^https?:$/.test(location.protocol)) {
+      out.textContent = 'Local preview: /api only exists on the deployed https site. Open the Firebase URL on the phone.';
+      document.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+    }
     document.getElementById('set').onclick = () => call('/api/spike/set');
     document.getElementById('read').onclick = () => call('/api/spike/read');
     document.getElementById('clear').onclick = () => call('/api/spike/clear');
