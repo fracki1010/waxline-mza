@@ -19,7 +19,7 @@ export function Home() {
     return (
       <main className="screen">
         <OfflineBanner />
-        <button type="button" onClick={() => setView("home")}>
+        <button type="button" className="back-link" onClick={() => setView("home")}>
           {messages.backHome}
         </button>
         {view === "agenda" ? <DayView /> : <ServiceList />}
@@ -33,16 +33,17 @@ export function Home() {
         {messages.welcome(data?.displayName ?? "")}
       </h1>
       <OfflineBanner />
-      <nav>
+      <nav className="home-nav">
         <button type="button" onClick={() => setView("agenda")}>
           {messages.agendaButton}
-        </button>{" "}
+        </button>
         <button type="button" onClick={() => setView("services")}>
           {messages.servicesButton}
         </button>
       </nav>
       <button
         type="button"
+        className="signout"
         aria-disabled={signOut.isPending}
         onClick={() => {
           if (busy.current || signOut.isPending) return;
