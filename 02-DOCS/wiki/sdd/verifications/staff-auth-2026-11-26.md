@@ -25,3 +25,8 @@ Environment: `https://waxline-mza.web.app` (Hosting) → Cloud Run `waxline-api`
 Not run in production: `npm audit` on the backend (no new dependency this slice); the service worker install and offline launch on a real device; contrast and screen reader checks (see T019).
 
 Open for the owner: finish AC5 (reopen after an hour and the next day) and AC6 on the phone; then record the outcome here.
+
+## Closure (T017)
+- Spec gate: PASS (structural; 11 open points, all typed). The gate does not check that each acceptance criterion is true.
+- Status at closure: **closed with open verification**. Implementation is on `main` and deployed. AC5, AC6 and AC8 are still open, and must be recorded here before the feature is called fully verified.
+- Owner decisions still open: minimum instances (0 now), Hosting origin in ALLOWED_ORIGINS, and whether to keep Atlas network access open to all addresses (plan risk 3).

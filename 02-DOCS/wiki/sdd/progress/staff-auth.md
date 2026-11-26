@@ -181,3 +181,6 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 - deployed: Cloud Run revision waxline-api (secret version 6, Atlas network access 0.0.0.0/0 per plan risk 3), Hosting release at waxline-mza.web.app
 - owner actions done: Atlas cluster, Atlas DB user with a new password (the one pasted in chat was rotated), secret waxline-mongodb-uri, Atlas Network Access, account `franco` created with the create-staff method (deleted once and recreated)
 - not verified: AC6 and AC8, AC5 beyond the same day, offline launch of the installed app
+
+## T017 — 2026-11-26 (closure, partial)
+- status: closed with open verification. Spec gate PASS (structural). AC5, AC6 and AC8 are open and recorded in verifications/staff-auth-2026-11-26.md; the feature is not fully verified until they are.
