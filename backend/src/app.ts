@@ -4,10 +4,12 @@ import { checkOrigin } from "./middleware/origin.js";
 import { errorHandler, notFound } from "./middleware/errors.js";
 import { requireStaff } from "./middleware/require-staff.js";
 import { createAppointmentModel } from "./models/appointment.js";
+import { createProductModel } from "./models/product.js";
 import { createServiceModel } from "./models/service.js";
 import { createStaffModel } from "./models/staff.js";
 import { createAppointmentsRouter } from "./routes/appointments.js";
 import { createAuthRouter } from "./routes/auth.js";
+import { createProductsRouter } from "./routes/products.js";
 import { createServicesRouter } from "./routes/services.js";
 import { createStaffListRouter } from "./routes/staff.js";
 import { healthRouter } from "./routes/health.js";
@@ -28,6 +30,7 @@ export interface Services {
   staff: ReturnType<typeof createStaffModel>;
   appointments: ReturnType<typeof createAppointmentModel>;
   serviceCatalog: ReturnType<typeof createServiceModel>;
+  products: ReturnType<typeof createProductModel>;
 }
 
 declare module "express-serve-static-core" {
@@ -50,6 +53,7 @@ export function createApp(deps: AppDeps): Express {
     staff: createStaffModel(deps.db),
     appointments: createAppointmentModel(deps.db),
     serviceCatalog: createServiceModel(deps.db),
+    products: createProductModel(deps.db),
   };
   app.use((_req, res, next) => {
     // One clock reading per request, shared by every service call.
@@ -68,6 +72,7 @@ export function createApp(deps: AppDeps): Express {
   protectedRoutes.use("/appointments", createAppointmentsRouter());
   protectedRoutes.use("/services", createServicesRouter());
   protectedRoutes.use("/staff", createStaffListRouter());
+  protectedRoutes.use("/products", createProductsRouter());
   deps.mountProtected?.(protectedRoutes);
   api.use(protectedRoutes);
   app.use("/api", api);
