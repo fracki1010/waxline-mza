@@ -22,3 +22,8 @@ Stage: deployed to production 2026-11-26 (owner approved). Accessibility (axe) c
 - Hosting redeployed 2026-11-26 with commit `ed0427f`; bundle `index-D3gRNI23.js` served. Backend unchanged (still `waxline-api-00006-f6q`).
 - Accessibility: axe in jsdom (unit tests) and axe in real Chromium with a phone viewport (`frontend/e2e/a11y.spec.ts`) found no violations or incomplete results on agenda, form and services, contrast included.
 - Still open: screen reader check and a real phone check (owner).
+
+## Design pass — agenda and form
+- Committed `f38f9ff` (`feat(ui): redesign agenda and appointment form layout`) and pushed to `origin/main`.
+- Not deployed to Hosting yet; deploy needs owner approval.
+- Verified: unit tests (156), lint, typecheck, build, Playwright E2E + axe on phone viewport (6/6). Visual look at screenshots not done.
