@@ -5,9 +5,11 @@ import { App } from "./App";
 import "./index.css";
 import { createQueryClient } from "./shared/queryClient";
 import { CACHE_BUSTER, CACHE_MAX_AGE, persister, requestDurableStorage } from "./shared/persist";
+import { startSyncWorker } from "./shared/syncWorker";
 
 const queryClient = createQueryClient();
 requestDurableStorage();
+startSyncWorker(() => void queryClient.invalidateQueries());
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
