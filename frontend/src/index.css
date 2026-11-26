@@ -19,6 +19,9 @@ label {
 h1 {
   overflow-wrap: anywhere;
 }
+select {
+  min-height: 44px;
+}
 input,
 button {
   min-height: 44px;

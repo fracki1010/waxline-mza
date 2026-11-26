@@ -71,7 +71,7 @@ describe("ServiceList", () => {
   it("deactivates a service and shows it as inactive", async () => {
     renderList();
     const row = (await screen.findByText("Lavado completo")).closest("li") as HTMLElement;
-    fireEvent.click(within(row).getByRole("button", { name: "Desactivar" }));
+    fireEvent.click(within(row).getByRole("button", { name: /^Desactivar/ }));
     await waitFor(() => expect(row).toHaveTextContent("Inactivo"));
     expect(calls).toContainEqual(
       expect.objectContaining({

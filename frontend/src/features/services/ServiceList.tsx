@@ -31,11 +31,16 @@ function ServiceRow({ service }: { service: Service }) {
         <>
           <span>{service.name}</span>
           {!service.active && <span> ({messages.inactiveTag})</span>}{" "}
-          <button type="button" onClick={() => setRenaming(true)}>
+          <button
+            type="button"
+            aria-label={`${messages.renameService}: ${service.name}`}
+            onClick={() => setRenaming(true)}
+          >
             {messages.renameService}
           </button>{" "}
           <button
             type="button"
+            aria-label={`${service.active ? messages.deactivateService : messages.activateService}: ${service.name}`}
             onClick={() => toggle.mutate({ id: service.id, active: !service.active })}
           >
             {service.active ? messages.deactivateService : messages.activateService}

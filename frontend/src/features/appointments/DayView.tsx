@@ -42,6 +42,7 @@ export function DayView() {
       {appointments.isPending && <p role="status">{messages.loading}</p>}
       {appointments.isError && <p role="alert">{messages.genericError}</p>}
       {appointments.data?.length === 0 && <p>{messages.emptyDay}</p>}
+      {cancel.isError && <p role="alert">{messages.genericError}</p>}
       <ul>
         {appointments.data?.map((item) => (
           <li key={item.id}>
@@ -54,10 +55,18 @@ export function DayView() {
             {item.status === "active" && (
               <>
                 {" "}
-                <button type="button" onClick={() => setEditing(item)}>
+                <button
+                  type="button"
+                  aria-label={`${messages.editAppointment}: ${item.customerName}, ${time(item.start)}`}
+                  onClick={() => setEditing(item)}
+                >
                   {messages.editAppointment}
                 </button>{" "}
-                <button type="button" onClick={() => cancel.mutate(item.id)}>
+                <button
+                  type="button"
+                  aria-label={`${messages.cancelAppointment}: ${item.customerName}, ${time(item.start)}`}
+                  onClick={() => cancel.mutate(item.id)}
+                >
                   {messages.cancelAppointment}
                 </button>
               </>
