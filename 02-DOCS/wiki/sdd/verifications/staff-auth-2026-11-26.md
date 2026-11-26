@@ -16,7 +16,7 @@ Environment: `https://waxline-mza.web.app` (Hosting) → Cloud Run `waxline-api`
 | AC2 wrong password refused generically | PASS (partly) | Unknown user with wrong password → 401 `INVALID_CREDENTIALS`, same message as a wrong password for a known user (not separately tested with a known user in production) |
 | AC3 unknown username same as wrong password | PASS | Same 401 and body shape (see AC2) |
 | AC4 signed-out visitor sees only sign-in | PASS (partly) | `GET /api/auth/me` without session → 401; owner saw the sign-in screen before signing in |
-| AC5 reopen within 14 days keeps session | PASS (partly) | Owner reports it works on the iPhone ("si funciona"). The timing of the reopen was not recorded; the one-hour and next-day checks are not confirmed separately |
+| AC5 reopen within 14 days keeps session | PASS | Owner reports it works on the iPhone, including after one hour and the next day ("si funciona", confirmed to the question about those checks). Exact reopen times not recorded |
 | AC6 sign-out ends access on the device | PASS | Owner reports it works on the iPhone ("si funciona"); Salir returns to sign-in (steps and timing not recorded) |
 | AC7 five failures lock the username | PASS | Throwaway username, 5 × 401 then 429 `LOCKED` on attempts 6 and 7 |
 | AC8 session unused more than 14 days asks again | NOT RUN | Needs a 14-day wait or a clock change; covered by integration tests only |
@@ -24,7 +24,7 @@ Environment: `https://waxline-mza.web.app` (Hosting) → Cloud Run `waxline-api`
 
 Not run in production: `npm audit` on the backend (no new dependency this slice); the service worker install and offline launch on a real device; contrast and screen reader checks (see T019).
 
-Open for the owner: confirm whether the reopen check was after one hour and after the next day (AC5); AC8 stays test-only until the 14-day check.
+Open: AC8 stays test-only until a 14-day check (or a clock change) is done.
 
 ## Closure (T017)
 - Spec gate: PASS (structural; 11 open points, all typed). The gate does not check that each acceptance criterion is true.
