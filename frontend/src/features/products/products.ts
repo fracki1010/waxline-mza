@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../../shared/api";
 import { refusalOf } from "../../shared/apiRefusal";
+import { requireOnline } from "../../shared/offlineWrite";
 
 export interface Product {
   id: string;
@@ -35,6 +36,7 @@ export function useAddProduct() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: ProductInput) => {
+      requireOnline();
       const res = await apiFetch("/api/products", { method: "POST", body: JSON.stringify(input) });
       if (!res.ok) throw await refusalOf(res);
     },
@@ -47,6 +49,7 @@ export function useAdjustStock() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, delta }: { id: string; delta: number }) => {
+      requireOnline();
       const res = await apiFetch(`/api/products/${id}/adjust`, {
         method: "POST",
         body: JSON.stringify({ delta }),
@@ -61,6 +64,7 @@ export function useSetProductActive() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
+      requireOnline();
       const res = await apiFetch(`/api/products/${id}`, {
         method: "PATCH",
         body: JSON.stringify({ active }),

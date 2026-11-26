@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../../shared/api";
 import { refusalOf } from "../../shared/apiRefusal";
+import { requireOnline } from "../../shared/offlineWrite";
 
 export interface Service {
   id: string;
@@ -32,6 +33,7 @@ export function useSaveService(id?: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (name: string) => {
+      requireOnline();
       const res = await apiFetch(id ? `/api/services/${id}` : "/api/services", {
         method: id ? "PATCH" : "POST",
         body: JSON.stringify({ name }),
@@ -46,6 +48,7 @@ export function useSetServiceActive() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
+      requireOnline();
       const res = await apiFetch(`/api/services/${id}`, {
         method: "PATCH",
         body: JSON.stringify({ active }),

@@ -1,6 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../../shared/api";
 import { refusalOf } from "../../shared/apiRefusal";
+import { messages } from "../../shared/messages";
+import { newClientId } from "../../shared/outbox";
+import { queueWithId } from "../../shared/offlineWrite";
 
 export interface Vehicle {
   id: string;
@@ -34,7 +37,19 @@ export function useAddCustomer() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: { name: string; phone: string }) => {
-      const res = await apiFetch("/api/customers", { method: "POST", body: JSON.stringify(input) });
+      const clientId = newClientId();
+      const body = { ...input, clientId };
+      if (
+        await queueWithId(clientId, {
+          method: "POST",
+          path: "/api/customers",
+          body,
+          label: messages.outboxCustomer,
+        })
+      ) {
+        return;
+      }
+      const res = await apiFetch("/api/customers", { method: "POST", body: JSON.stringify(body) });
       if (!res.ok) throw await refusalOf(res);
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: [KEY] }),
@@ -53,10 +68,20 @@ export function useAddVehicle() {
       plate: string;
       model: string;
     }) => {
-      const res = await apiFetch(`/api/customers/${customerId}/vehicles`, {
-        method: "POST",
-        body: JSON.stringify({ plate, model }),
-      });
+      const clientId = newClientId();
+      const path = `/api/customers/${customerId}/vehicles`;
+      const body = { plate, model, clientId };
+      if (
+        await queueWithId(clientId, {
+          method: "POST",
+          path,
+          body,
+          label: messages.outboxVehicle,
+        })
+      ) {
+        return;
+      }
+      const res = await apiFetch(path, { method: "POST", body: JSON.stringify(body) });
       if (!res.ok) throw await refusalOf(res);
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: [KEY] }),

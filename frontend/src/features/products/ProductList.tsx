@@ -13,6 +13,7 @@ import {
 const REFUSALS: Record<string, string> = {
   INSUFFICIENT_STOCK: messages.insufficientStockError,
   VALIDATION_ERROR: messages.validationError,
+  OFFLINE_BLOCKED: messages.offlineBlocked,
 };
 
 function refusalMessage(err: unknown): string {

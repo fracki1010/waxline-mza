@@ -9,6 +9,7 @@ const REFUSAL_MESSAGES: Record<string, string> = {
   APPOINTMENT_OVERLAP: messages.overlapError,
   VALIDATION_ERROR: messages.validationError,
   NOT_FOUND: messages.notFoundError,
+  OFFLINE_BLOCKED: messages.offlineBlocked,
 };
 
 interface Props {

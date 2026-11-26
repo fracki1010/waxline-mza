@@ -49,7 +49,7 @@ beforeEach(() => {
     "fetch",
     vi.fn(async (path: string, init?: RequestInit) => {
       const method = init?.method ?? "GET";
-      calls.push({ path, method, body: init?.body as string | undefined });
+      calls.push({ path, method, body: init?.body ? JSON.parse(init.body as string) : undefined });
       if (path.startsWith("/api/sales?") && method === "GET") return json({ sales });
       if (path === "/api/sales" && method === "POST") {
         return json({ error: { code: "INSUFFICIENT_STOCK", message: "x" } }, 409);
@@ -102,7 +102,7 @@ describe("SalesScreen", () => {
       expect.objectContaining({
         path: "/api/sales",
         method: "POST",
-        body: JSON.stringify({
+        body: expect.objectContaining({
           customerId: "c1",
           vehicleId: "v1",
           lines: [{ kind: "service", refId: "s1", quantity: 1 }],

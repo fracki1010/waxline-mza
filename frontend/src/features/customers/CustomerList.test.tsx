@@ -29,7 +29,7 @@ beforeEach(() => {
     "fetch",
     vi.fn(async (path: string, init?: RequestInit) => {
       const method = init?.method ?? "GET";
-      calls.push({ path, method, body: init?.body as string | undefined });
+      calls.push({ path, method, body: init?.body ? JSON.parse(init.body as string) : undefined });
       if (path.startsWith("/api/customers?") || path === "/api/customers") {
         if (method === "GET") return json({ customers });
         return json({ id: "c3" }, 201);
@@ -85,7 +85,7 @@ describe("CustomerList", () => {
         expect.objectContaining({
           path: "/api/customers",
           method: "POST",
-          body: JSON.stringify({ name: "Marta", phone: "1177770000" }),
+          body: expect.objectContaining({ name: "Marta", phone: "1177770000" }),
         }),
       ),
     );
@@ -103,7 +103,7 @@ describe("CustomerList", () => {
         expect.objectContaining({
           path: "/api/customers/c1/vehicles",
           method: "POST",
-          body: JSON.stringify({ plate: "AD456EF", model: "Clio" }),
+          body: expect.objectContaining({ plate: "AD456EF", model: "Clio" }),
         }),
       ),
     );

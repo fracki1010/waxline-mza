@@ -18,6 +18,12 @@ export const messages = {
   signOutNotConfirmed:
     "Su sesión se cerró en este equipo, pero no se pudo confirmar en el servidor. Cuando tenga conexión, ingrese y salga de nuevo.",
   offlineBanner: "Sin conexión. Algunas acciones no estarán disponibles.",
+  offlineBlocked:
+    "Esta acción necesita conexión. Conéctese e intente de nuevo. Los cambios de stock y precios no se guardan sin conexión.",
+  outboxAppointment: "Cita",
+  outboxCustomer: "Cliente",
+  outboxVehicle: "Vehículo",
+  outboxSale: "Venta",
   backOnline: "Conexión restablecida.",
   loading: "Cargando…",
   retryButton: "Reintentar",
