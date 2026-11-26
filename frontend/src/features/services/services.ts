@@ -6,6 +6,7 @@ export interface Service {
   id: string;
   name: string;
   active: boolean;
+  price: number | null; // null for services recorded before pricing
 }
 
 export interface StaffMember {

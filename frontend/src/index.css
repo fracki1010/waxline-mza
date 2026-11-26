@@ -133,6 +133,25 @@ ul {
   gap: 0.5rem;
   margin-bottom: 1.5rem;
 }
+.sale-line {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  align-items: end;
+  margin-bottom: 0.75rem;
+}
+.sale-line > button {
+  grid-column: 1 / -1;
+}
+.vehicles {
+  list-style: none;
+  margin: 0.25rem 0 0.5rem;
+  padding: 0;
+  color: var(--muted);
+}
+.appt-cancelled {
+  opacity: 0.6;
+}
 select {
   min-height: 44px;
   font: inherit;

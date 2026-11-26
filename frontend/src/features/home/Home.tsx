@@ -1,12 +1,23 @@
-import { useRef, useState } from "react";
+import { useRef, useState, type ComponentType } from "react";
 import { OfflineBanner } from "../auth/OfflineBanner";
 import { useSession, useSignOut } from "../auth/session";
 import { DayView } from "../appointments/DayView";
 import { ServiceList } from "../services/ServiceList";
+import { ProductList } from "../products/ProductList";
+import { CustomerList } from "../customers/CustomerList";
+import { SalesScreen } from "../sales/SalesScreen";
 import { messages } from "../../shared/messages";
 import { useScreenFocus } from "../../shared/useScreenFocus";
 
-type View = "home" | "agenda" | "services";
+type View = "home" | "agenda" | "services" | "products" | "customers" | "sales";
+
+const SCREENS: Record<Exclude<View, "home">, ComponentType> = {
+  agenda: DayView,
+  services: ServiceList,
+  products: ProductList,
+  customers: CustomerList,
+  sales: SalesScreen,
+};
 
 export function Home() {
   const { data } = useSession();
@@ -16,13 +27,14 @@ export function Home() {
   const [view, setView] = useState<View>("home");
 
   if (view !== "home") {
+    const Screen = SCREENS[view];
     return (
       <main className="screen">
         <OfflineBanner />
         <button type="button" className="back-link" onClick={() => setView("home")}>
           {messages.backHome}
         </button>
-        {view === "agenda" ? <DayView /> : <ServiceList />}
+        <Screen />
       </main>
     );
   }
@@ -39,6 +51,15 @@ export function Home() {
         </button>
         <button type="button" onClick={() => setView("services")}>
           {messages.servicesButton}
+        </button>
+        <button type="button" onClick={() => setView("products")}>
+          {messages.productsButton}
+        </button>
+        <button type="button" onClick={() => setView("customers")}>
+          {messages.customersButton}
+        </button>
+        <button type="button" onClick={() => setView("sales")}>
+          {messages.salesButton}
         </button>
       </nav>
       <button
