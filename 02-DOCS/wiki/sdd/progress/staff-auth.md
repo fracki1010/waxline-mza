@@ -175,3 +175,9 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 
 ## T015 — 2026-11-26 (correction)
 - status: complete. Owner approved in chat; committed on main; the pre-commit hook ran and passed. The defaults (concurrency 4, max-instances 2, min-instances 0, the Hosting origin placeholder, us-central1) were not re-confirmed item by item; they stay editable in deploy/deploy-api.sh before T016.
+
+## T016 — 2026-11-26 (partial)
+- status: deployed; production checks PASS for AC1, AC2, AC3, AC4 (partly), AC7, AC9 (partly); AC5 partial (owner reports it works on iPhone; timing not recorded); AC6 and AC8 not run. Record: 02-DOCS/wiki/sdd/verifications/staff-auth-2026-11-26.md
+- deployed: Cloud Run revision waxline-api (secret version 6, Atlas network access 0.0.0.0/0 per plan risk 3), Hosting release at waxline-mza.web.app
+- owner actions done: Atlas cluster, Atlas DB user with a new password (the one pasted in chat was rotated), secret waxline-mongodb-uri, Atlas Network Access, account `franco` created with the create-staff method (deleted once and recreated)
+- not verified: AC6 and AC8, AC5 beyond the same day, offline launch of the installed app
