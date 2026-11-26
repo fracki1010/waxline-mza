@@ -1,0 +1,32 @@
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+}
+.screen {
+  display: block;
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+.form {
+  display: grid;
+  gap: 1rem;
+}
+label {
+  display: grid;
+  gap: 0.25rem;
+}
+input,
+button {
+  min-height: 44px;
+  font: inherit;
+  padding: 0 0.75rem;
+}
+input:focus-visible,
+button:focus-visible {
+  outline: 3px solid #1a56db;
+  outline-offset: 2px;
+}
+[role="alert"] {
+  color: #b00020;
+}

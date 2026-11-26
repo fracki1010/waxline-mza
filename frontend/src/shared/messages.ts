@@ -13,6 +13,10 @@ export const messages = {
   validationRequired: "Complete el usuario y la contraseña.",
   offline: "No se pudo conectar con el servidor. Revise su conexión e intente de nuevo.",
   sessionExpired: "Su sesión expiró. Ingrese nuevamente.",
+  signOutNotConfirmed:
+    "La sesión se cerró en este equipo, pero no se pudo confirmar en el servidor. Conéctese y vuelva a salir.",
+  loading: "Cargando…",
+  retryButton: "Reintentar",
   genericError: "Ocurrió un error inesperado. Intente de nuevo.",
 } as const;
 

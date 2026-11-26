@@ -135,3 +135,14 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 
 ## T012 — 2026-11-25 (correction)
 - status: complete. Owner approved in chat; committed on main; the pre-commit hook ran and passed.
+
+## T013-T014 — 2026-11-25
+- status: built, reviewed (panel of 3, round 1 fixed), awaiting human approval of the final diff (tier 2)
+- red: T013 tests failed at import (feature missing); after the panel, 21 of 42 auth tests and 1 of 14 api tests failed on assertions before the fixes
+- green: frontend 96 tests, 5 consecutive full runs green in my own check; 100% lines (99% statements, 98.7% branches); lint, typecheck and build clean; `npm audit --omit=dev` 0 vulnerabilities
+- dependency: `@tanstack/react-query` 5.107.1 pinned exactly (writer reports published 2026-11-06; I verified only npm's last-modified date, 2026-11-23)
+- mutation: writer 8 mutants before the panel (1 equivalent survivor: `/me` rethrowing `SessionLostError`) and 20 after it, all killed; 3 survivors were weak tests and were strengthened
+- files: frontend/src/{App,App.test,main}.tsx, index.css, features/auth/*, features/home/Home.tsx, shared/{api,api.test,messages,queryClient}.ts, package.json, package-lock.json
+- risk: tier 2 (auth class) by `rsc risk`; panel of 3 (security, correctness and tests, resilience), read-only. 0 findings from security, 3 blockers across the others: a failed background refetch replaced the app with the error screen (3 of 3), a stale `/me` could overwrite a newer sign-in or sign-out (2 of 3), sign-out hid that the server session may still be alive; plus no request timeout. All fixed with tests, along with 6 should-fix. Parked: focus management, `aria-describedby`, landmarks, offline banner (T019); `sessionExpired` unused; failed password in mutation variables. Round 2 was NOT an independent re-review: verified by tests, 20 mutants and my own runs
+- controls: tests ok, lint ok, typecheck ok, build ok, traceability ok (AC1, AC2, AC4, AC6), audit ok
+- not verified: real browser (bfcache, focus events, password managers), real backend run and the dev proxy, the real 15 s timeout (jsdom ignores fake timers for it; tested through a spy), axe (T019)

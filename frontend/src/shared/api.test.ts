@@ -7,7 +7,10 @@ const mockFetch = (impl: () => Promise<Response>) => {
   vi.stubGlobal("fetch", f);
   return f;
 };
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
 
 describe("apiFetch", () => {
   it("rejects paths outside /api/", async () => {
@@ -64,6 +67,40 @@ describe("apiFetch", () => {
       mockFetch(async () => new Response(null, { status }));
       expect((await apiFetch("/api/x")).status).toBe(status);
     }
+  });
+
+  describe("timeout", () => {
+    let seen: AbortSignal | undefined;
+    const hang = () =>
+      vi.stubGlobal(
+        "fetch",
+        (_p: string, init: RequestInit) =>
+          new Promise((_, reject) =>
+            (seen = init.signal!).addEventListener("abort", () =>
+              reject(new DOMException("x", "AbortError")),
+            ),
+          ),
+      );
+
+    it("uses a 15 second timeout signal and maps the abort to NetworkError", async () => {
+      const ac = new AbortController();
+      const spy = vi.spyOn(AbortSignal, "timeout").mockReturnValue(ac.signal);
+      hang();
+      const p = apiFetch("/api/x");
+      expect(spy).toHaveBeenCalledWith(15_000);
+      ac.abort();
+      expect(seen?.aborted).toBe(true);
+      await expect(p).rejects.toBeInstanceOf(NetworkError);
+    });
+
+    it("also aborts when the caller signal aborts", async () => {
+      const caller = new AbortController();
+      hang();
+      const p = apiFetch("/api/x", { signal: caller.signal });
+      caller.abort();
+      expect(seen?.aborted).toBe(true);
+      await expect(p).rejects.toBeInstanceOf(NetworkError);
+    });
   });
 });
 

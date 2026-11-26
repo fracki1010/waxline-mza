@@ -200,7 +200,7 @@ Rollback: the feature is additive with no data migration for other features; rev
 
 **T014 — Interfaces**
 - Consumes: the T010 HTTP contract; all calls are same-origin `/api/...` with cookies sent.
-- Produces: `useSession(): UseQueryResult<{ id: string; displayName: string }>`, `<RequireStaff>` route guard, `signIn(username, password)` and `signOut()` mutations that invalidate the session query.
+- Produces: `useSession(): UseQueryResult<{ id: string; displayName: string }>`, `<RequireStaff>` route guard, `signIn(username, password)` and `signOut()` mutations that cancel any in-flight session fetch and then set the session query directly (sign-in to the member, sign-out to `null`), removing every other cached query; a 401 from `/me` or from any other call ends the session the same way. Sign-out always wipes locally and, when the server call is not confirmed, the sign-in screen says so.
 
 ## Review Workload Forecast
 

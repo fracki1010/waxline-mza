@@ -12,6 +12,8 @@ export class NetworkError extends Error {
   }
 }
 
+const REQUEST_TIMEOUT_MS = 15_000;
+
 export async function apiFetch(
   path: string,
   init: RequestInit = {},
@@ -28,9 +30,18 @@ export async function apiFetch(
   if (typeof init.body === "string" && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
+  // A request that never answers must not leave the UI spinning forever.
+  const timeout = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
+  const signal = init.signal ? AbortSignal.any([init.signal, timeout]) : timeout;
   let res: Response;
   try {
-    res = await fetch(path, { ...init, headers, credentials: "same-origin", cache: "no-store" });
+    res = await fetch(path, {
+      ...init,
+      signal,
+      headers,
+      credentials: "same-origin",
+      cache: "no-store",
+    });
   } catch {
     throw new NetworkError();
   }

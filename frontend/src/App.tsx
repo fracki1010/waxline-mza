@@ -1,3 +1,10 @@
+import { RequireStaff } from "./features/auth/RequireStaff";
+import { Home } from "./features/home/Home";
+
 export function App() {
-  return <h1>waxline-mza</h1>;
+  return (
+    <RequireStaff>
+      <Home />
+    </RequireStaff>
+  );
 }
