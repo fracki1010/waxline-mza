@@ -27,3 +27,8 @@ Stage: deployed to production 2026-11-26 (owner approved). Accessibility (axe) c
 - Committed `f38f9ff` (`feat(ui): redesign agenda and appointment form layout`) and pushed to `origin/main`.
 - Not deployed to Hosting yet; deploy needs owner approval.
 - Verified: unit tests (156), lint, typecheck, build, Playwright E2E + axe on phone viewport (6/6). Visual look at screenshots not done.
+
+## Frontend redeploy — design pass and 18:00 slot
+- Hosting redeployed 2026-11-26 from commit `f3acd0e`; bundle `index-CBjus5h6.js` served. Backend unchanged (`waxline-api-00006-f6q`).
+- Check after deploy: `https://waxline-mza.web.app/api/services` returns 401 without a session.
+- Still open: owner real-phone check and screen reader check.
