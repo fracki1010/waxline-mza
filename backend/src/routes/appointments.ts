@@ -1,4 +1,4 @@
-import { Router, type Request } from "express";
+import { Router, type Request, type Response } from "express";
 import { ObjectId } from "mongodb";
 import { sendError } from "../middleware/errors.js";
 import type { AppointmentDoc, AppointmentFields } from "../models/appointment.js";
@@ -22,6 +22,12 @@ const isText = (value: unknown, max: number): value is string =>
 
 const isDate = (value: unknown): value is string =>
   typeof value === "string" && !Number.isNaN(new Date(value).getTime());
+
+// undefined: not sent; null: malformed; number: the revision the device last saw.
+function parseRevision(value: unknown): number | undefined | null {
+  if (value === undefined) return undefined;
+  return typeof value === "number" && Number.isInteger(value) && value >= 1 ? value : null;
+}
 
 // Validates only the fields present in the body, so the same parser serves create and edit.
 function parsePartial(body: unknown): Partial<AppointmentFields> | null {
@@ -76,6 +82,7 @@ function toJson(doc: AppointmentDoc, serviceName: string) {
     start: doc.start.toISOString(),
     end: doc.end.toISOString(),
     status: doc.status,
+    revision: doc.revision ?? 1,
   };
 }
 
@@ -116,6 +123,18 @@ export function createAppointmentsRouter(): Router {
   // Service names are read at response time, so a rename shows on every existing appointment (AC11).
   async function nameOf(req: Request, docs: AppointmentDoc[]): Promise<Map<string, string>> {
     return req.app.locals.services.serviceCatalog.findNames(docs.map((doc) => doc.serviceId));
+  }
+
+  // 409 with the current record, so the device can show both versions and let staff choose.
+  async function sendChangedElsewhere(req: Request, res: Response, current: AppointmentDoc) {
+    const names = await nameOf(req, [current]);
+    res.status(409).json({
+      error: {
+        code: "CHANGED_ELSEWHERE",
+        message: "This appointment was changed on another device.",
+      },
+      appointment: toJson(current, names.get(current.serviceId.toHexString()) ?? ""),
+    });
   }
 
   router.get("/", async (req, res) => {
@@ -180,6 +199,18 @@ export function createAppointmentsRouter(): Router {
       return;
     }
     const id = new ObjectId(req.params.id);
+    const raw = (req.body ?? {}) as Record<string, unknown>;
+    const editClientId = parseClientId(raw.clientId);
+    const expectedRevision = parseRevision(raw.revision);
+    if (editClientId === null || expectedRevision === null) {
+      sendError(
+        res,
+        400,
+        "VALIDATION_ERROR",
+        "Client id must be a UUID and revision a whole number.",
+      );
+      return;
+    }
     const parsed = parsePartial(req.body);
     if (parsed === null || Object.keys(parsed).length === 0) {
       sendError(res, 400, "VALIDATION_ERROR", "Send at least one valid appointment field.");
@@ -188,6 +219,17 @@ export function createAppointmentsRouter(): Router {
     const current = await appointments.findById(id);
     if (current === null || current.status === "cancelled") {
       sendError(res, 404, "NOT_FOUND", "Appointment not found.");
+      return;
+    }
+    // A replayed offline edit answers with the record as it is now, without applying again.
+    if (editClientId && current.lastEditClientId === editClientId) {
+      const names = await nameOf(req, [current]);
+      res.json(toJson(current, names.get(current.serviceId.toHexString()) ?? ""));
+      return;
+    }
+    // The device edited a version someone else has already changed: refuse, and send the current one.
+    if (expectedRevision !== undefined && expectedRevision !== (current.revision ?? 1)) {
+      await sendChangedElsewhere(req, res, current);
       return;
     }
     // Check the merged result, so changing only the time still validates against the stored employee.
@@ -209,9 +251,22 @@ export function createAppointmentsRouter(): Router {
       sendError(res, refusal.status, refusal.code, refusal.message);
       return;
     }
-    const doc = await appointments.update(id, merged, res.locals.staff.id, res.locals.now);
+    const doc = await appointments.update(
+      id,
+      merged,
+      res.locals.staff.id,
+      res.locals.now,
+      expectedRevision,
+      editClientId,
+    );
     if (doc === null) {
-      sendError(res, 404, "NOT_FOUND", "Appointment not found.");
+      // Null with a revision given means another edit landed between the read and the write.
+      const latest = await appointments.findById(id);
+      if (latest === null) {
+        sendError(res, 404, "NOT_FOUND", "Appointment not found.");
+        return;
+      }
+      await sendChangedElsewhere(req, res, latest);
       return;
     }
     const names = await nameOf(req, [doc]);

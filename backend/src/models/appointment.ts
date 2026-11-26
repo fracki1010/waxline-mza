@@ -14,6 +14,9 @@ export interface AppointmentDoc {
   end: Date;
   status: "active" | "cancelled";
   clientId?: string;
+  // Bumped on every edit. Missing on appointments created before revisions existed; read as 1.
+  revision?: number;
+  lastEditClientId?: string;
   createdBy: string;
   updatedBy: string;
   createdAt: Date;
@@ -72,6 +75,7 @@ export function createAppointmentModel(db: Db) {
       const doc: Omit<AppointmentDoc, "_id"> = {
         ...fields,
         ...(clientId ? { clientId } : {}),
+        revision: 1,
         status: "active",
         createdBy: by,
         updatedBy: by,
@@ -86,17 +90,34 @@ export function createAppointmentModel(db: Db) {
       return appointments.findOne({ _id: id });
     },
 
+    // With expectedRevision the update only applies to that revision (null on mismatch, the caller reports a conflict).
     async update(
       id: ObjectId,
       fields: AppointmentFields,
       by: string,
       now: Date,
+      expectedRevision?: number,
+      editClientId?: string,
     ): Promise<AppointmentDoc | null> {
-      return appointments.findOneAndUpdate(
-        { _id: id },
-        { $set: { ...fields, updatedBy: by, updatedAt: now } },
-        { returnDocument: "after" },
-      );
+      // Documents from before revisions have no field; they count as revision 1.
+      const filter: Filter<AppointmentDoc> =
+        expectedRevision === undefined
+          ? { _id: id }
+          : expectedRevision === 1
+            ? { _id: id, $or: [{ revision: 1 }, { revision: { $exists: false } }] }
+            : { _id: id, revision: expectedRevision };
+      const set = {
+        ...fields,
+        updatedBy: by,
+        updatedAt: now,
+        ...(editClientId ? { lastEditClientId: editClientId } : {}),
+      };
+      // The matched revision is known, so the next one is set exactly; without it, increment.
+      const change =
+        expectedRevision === undefined
+          ? { $set: set, $inc: { revision: 1 } }
+          : { $set: { ...set, revision: expectedRevision + 1 } };
+      return appointments.findOneAndUpdate(filter, change, { returnDocument: "after" });
     },
 
     // Cancelling keeps the record; the status change is what frees the time.
