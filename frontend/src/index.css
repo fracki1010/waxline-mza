@@ -21,6 +21,10 @@ h1 {
 }
 select {
   min-height: 44px;
+  font: inherit;
+}
+.day-new {
+  margin-top: 0.5rem;
 }
 input,
 button {

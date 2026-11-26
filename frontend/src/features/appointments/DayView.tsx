@@ -28,7 +28,7 @@ export function DayView() {
         {messages.dayLabel}{" "}
         <input type="date" value={day} onChange={(e) => setDay(e.target.value)} />
       </label>{" "}
-      <button type="button" onClick={() => setEditing("new")}>
+      <button type="button" className="day-new" onClick={() => setEditing("new")}>
         {messages.newAppointment}
       </button>
       {editing !== null && (
