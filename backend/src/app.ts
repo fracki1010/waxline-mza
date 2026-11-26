@@ -9,6 +9,7 @@ import { createStaffModel } from "./models/staff.js";
 import { createAppointmentsRouter } from "./routes/appointments.js";
 import { createAuthRouter } from "./routes/auth.js";
 import { createServicesRouter } from "./routes/services.js";
+import { createStaffListRouter } from "./routes/staff.js";
 import { healthRouter } from "./routes/health.js";
 import { createLockout } from "./services/lockout.js";
 import { createSessions } from "./services/sessions.js";
@@ -66,6 +67,7 @@ export function createApp(deps: AppDeps): Express {
   protectedRoutes.use(requireStaff);
   protectedRoutes.use("/appointments", createAppointmentsRouter());
   protectedRoutes.use("/services", createServicesRouter());
+  protectedRoutes.use("/staff", createStaffListRouter());
   deps.mountProtected?.(protectedRoutes);
   api.use(protectedRoutes);
   app.use("/api", api);

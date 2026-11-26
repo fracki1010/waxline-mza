@@ -136,3 +136,12 @@ describe("services", () => {
     expect(res.status).toBe(401);
   });
 });
+
+describe("staff list", () => {
+  it("lists staff names without credentials, for the employee picker", async () => {
+    const res = await withSession(request(app).get("/api/staff"));
+    expect(res.status).toBe(200);
+    expect(res.body.staff).toEqual([{ id: employee, displayName: "Ana" }]);
+    expect(JSON.stringify(res.body)).not.toContain("passwordHash");
+  });
+});

@@ -57,6 +57,15 @@ export function createStaffModel(db: Db) {
       return doc === null ? null : { id: doc._id.toHexString(), displayName: doc.displayName };
     },
 
+    // Names only, sorted for display. Credentials never leave this model.
+    async list(): Promise<{ id: string; displayName: string }[]> {
+      const docs = await staff
+        .find({}, { projection: { displayName: 1 } })
+        .sort({ displayName: 1 })
+        .toArray();
+      return docs.map((doc) => ({ id: doc._id.toHexString(), displayName: doc.displayName }));
+    },
+
     async createStaff(
       input: { username: string; displayName: string; passwordHash: string },
       now: Date,
