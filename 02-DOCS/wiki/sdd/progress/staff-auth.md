@@ -132,3 +132,6 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 - risk: tier 1. One fresh reviewer: 0 blockers, 5 should-fix. Fixed: HTML cached as a hashed asset, offline shell without assets and a never-changing cache name (now build-injected), `/index.html` redirect risk (precache `/` only), weak worker tests (offline fallback, install, activate, never-cache-a-navigation), `apiFetch` hardening (`..`, backslash, `no-store`, JSON type only for strings). Plan interface updated to the real `apiFetch` signature and to the `/me` 401 handling T014 needs. Round 2 was NOT an independent re-review: verified by tests, 11 mutants and my own run
 - controls: tests ok, lint ok, typecheck ok, build ok, traceability ok (AC5 and constitution 20 enabler), security scan not run (`npm audit` not executed; no new dependency)
 - not verified: real browser install, offline launch and update flow, and Hosting `cleanUrls` behaviour (T016 on the real URL); the dev proxy against a running backend; iOS
+
+## T012 — 2026-11-25 (correction)
+- status: complete. Owner approved in chat; committed on main; the pre-commit hook ran and passed.
