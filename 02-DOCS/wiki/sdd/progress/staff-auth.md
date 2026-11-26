@@ -111,3 +111,12 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 
 ## T009-T010 — 2026-11-25 (correction)
 - status: complete. Owner approved in chat; committed on main (a01c769); the pre-commit hook ran and passed.
+
+## T011 — 2026-11-25
+- status: built, reviewed, awaiting owner approval (tier 1 by `rsc risk`; plan expected 2 for password handling, so I ask anyway)
+- red: new test file failed to import the missing module (1 file failed, 158 existing passed); green: backend 173 tests, 3 consecutive full runs green; lint, typecheck and build clean; 100% lines
+- mutation: writer 10 killed mutants (min length 9/10/11, `<` vs `<=`, normalise removed, ensure-index removed, raw password hashed, exit code, arg parsing, error echo); 1 no-op placeholder discarded
+- files: backend/src/scripts/{create-staff,create-staff-cli}.ts, backend/test/create-staff.test.ts, backend/package.json (script), backend/vitest.config.ts (CLI excluded from coverage)
+- risk: one fresh reviewer (risk lens): 0 blockers, 3 should-fix, several nits. Fixed: single readline with `historySize: 0`, Ctrl-C and Ctrl-D end with "Cancelled" and exit 1 (observed in a pty). Not fixed: CLI has no automated test (checked by hand in a pty: success exit 0, mismatch exit 1, short password exit 1, non-TTY exit 1, Ctrl-C and Ctrl-D exit 1, secret never in output); npm script rebuilds the backend and needs `tsc` (decision for T015). Round 2 was NOT an independent re-review
+- controls: tests ok, lint ok, typecheck ok, build ok, traceability ok (AC1 enabler), npm arg forwarding checked by me, security scan not run (`npm audit` not executed; no new dependency)
+- not verified: Windows; a real terminal emulator beyond the pty; the script against Atlas

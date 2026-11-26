@@ -8,7 +8,7 @@ export default defineConfig({
       provider: "v8",
       include: ["src/**/*.ts"],
       // Entry point with no logic of its own; exercised by the real-URL pass in T016.
-      exclude: ["src/server.ts"],
+      exclude: ["src/server.ts", "src/scripts/create-staff-cli.ts"],
       thresholds: { lines: 70 },
     },
   },
