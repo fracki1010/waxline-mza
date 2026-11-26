@@ -163,3 +163,12 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 
 ## T019 — 2026-11-26 (correction)
 - status: complete. Owner approved in chat; committed on main; the pre-commit hook ran and passed.
+
+## T015 — 2026-11-26
+- status: built, awaiting owner approval (tier 1 by `rsc risk`; classes default and docs)
+- red: deploy-config test written first (asserts rewrite order, public dir, no-cache headers, project id, non-root user, no secret-looking keys, dockerignore)
+- green: backend 179 tests (10 files), lint and typecheck clean; `docker build` of backend/ succeeds; container run on local Mongo gives `GET /api/health` 200, runs as uid 1000 (`node`); grep for secret-looking values in the new files finds nothing
+- lockfile: the image's npm rejected the committed lock; regenerated with npm 11.19.1. Diff reviewed by me: adds two optional beta entries and `peer` flags, no version change
+- files: backend/{Dockerfile,.dockerignore,package-lock.json,test/deploy-config.test.ts}, firebase.json, .firebaserc, deploy/{deploy-api.sh,README.md}
+- not verified: real Atlas, gcloud, `firebase deploy`, the `/api/**` rewrite on a live Hosting URL (T016), the deploy script itself, Secret Manager secret and IAM
+- open for the owner: concurrency 4, max-instances 2, min-instances 0, the Hosting origin in ALLOWED_ORIGINS, region us-central1 against the Atlas region
