@@ -32,3 +32,9 @@ Stage: deployed to production 2026-11-26 (owner approved). Accessibility (axe) c
 - Hosting redeployed 2026-11-26 from commit `f3acd0e`; bundle `index-CBjus5h6.js` served. Backend unchanged (`waxline-api-00006-f6q`).
 - Check after deploy: `https://waxline-mza.web.app/api/services` returns 401 without a session.
 - Still open: owner real-phone check and screen reader check.
+
+## Frontend redeploy — day controls and form fields
+- Commit `fd457fd`; hosting bundle `index-BpA5N4As.js` served (backend unchanged).
+- Date on its own row, previous and next day below it. Start and end inputs appear only for a custom slot.
+- Checks: unit tests (156), lint, typecheck, Playwright E2E + axe on phone viewport (6/6), local phone-width review.
+- Still open: owner real-phone check and screen reader check.
