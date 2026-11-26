@@ -3,7 +3,9 @@ import type { Db } from "mongodb";
 import { checkOrigin } from "./middleware/origin.js";
 import { errorHandler, notFound } from "./middleware/errors.js";
 import { requireStaff } from "./middleware/require-staff.js";
+import { createAppointmentModel } from "./models/appointment.js";
 import { createStaffModel } from "./models/staff.js";
+import { createAppointmentsRouter } from "./routes/appointments.js";
 import { createAuthRouter } from "./routes/auth.js";
 import { healthRouter } from "./routes/health.js";
 import { createLockout } from "./services/lockout.js";
@@ -21,6 +23,7 @@ export interface Services {
   lockout: ReturnType<typeof createLockout>;
   sessions: ReturnType<typeof createSessions>;
   staff: ReturnType<typeof createStaffModel>;
+  appointments: ReturnType<typeof createAppointmentModel>;
 }
 
 declare module "express-serve-static-core" {
@@ -41,6 +44,7 @@ export function createApp(deps: AppDeps): Express {
     lockout: createLockout(deps.db),
     sessions: createSessions(deps.db),
     staff: createStaffModel(deps.db),
+    appointments: createAppointmentModel(deps.db),
   };
   app.use((_req, res, next) => {
     // One clock reading per request, shared by every service call.
@@ -56,6 +60,7 @@ export function createApp(deps: AppDeps): Express {
   api.use("/auth", createAuthRouter());
   const protectedRoutes = Router();
   protectedRoutes.use(requireStaff);
+  protectedRoutes.use("/appointments", createAppointmentsRouter());
   deps.mountProtected?.(protectedRoutes);
   api.use(protectedRoutes);
   app.use("/api", api);
