@@ -17,3 +17,7 @@ Stage: deployed to production 2026-11-26 (owner approved). Accessibility (axe) c
 - axe check on the appointment and service screens.
 - Real-device check of the agenda and forms.
 - Independent review of the diff.
+
+## Frontend redeploy — accessibility fixes
+- Hosting redeployed 2026-11-26 with commit `ed0427f`; bundle `index-D3gRNI23.js` served. Backend unchanged (still `waxline-api-00006-f6q`).
+- Accessibility check done with axe in jsdom; contrast, real browser and screen reader checks are still open.
