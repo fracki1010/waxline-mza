@@ -44,7 +44,6 @@ function parsePartial(body: unknown): Partial<AppointmentFields> | null {
     out.model = raw.model.trim();
   }
   if ("serviceId" in raw) {
-    // shortcut: serviceId is format-checked only; existence and active status are checked when the services slice lands.
     if (typeof raw.serviceId !== "string" || !HEX24.test(raw.serviceId)) return null;
     out.serviceId = new ObjectId(raw.serviceId);
   }
@@ -63,7 +62,7 @@ function parsePartial(body: unknown): Partial<AppointmentFields> | null {
   return out;
 }
 
-function toJson(doc: AppointmentDoc) {
+function toJson(doc: AppointmentDoc, serviceName: string) {
   return {
     id: doc._id.toHexString(),
     customerName: doc.customerName,
@@ -71,6 +70,7 @@ function toJson(doc: AppointmentDoc) {
     plate: doc.plate,
     model: doc.model,
     serviceId: doc.serviceId.toHexString(),
+    serviceName,
     employeeId: doc.employeeId.toHexString(),
     start: doc.start.toISOString(),
     end: doc.end.toISOString(),
@@ -85,14 +85,22 @@ export function createAppointmentsRouter(): Router {
   async function checkFields(
     fields: AppointmentFields,
     exceptId: ObjectId | undefined,
+    checkService: boolean,
     req: Request,
   ): Promise<{ status: number; code: string; message: string } | null> {
-    const { staff, appointments } = req.app.locals.services;
+    const { staff, appointments, serviceCatalog } = req.app.locals.services;
     if (fields.end.getTime() <= fields.start.getTime()) {
       return { status: 400, code: "VALIDATION_ERROR", message: "End must be after start." };
     }
     if ((await staff.findById(fields.employeeId.toHexString())) === null) {
       return { status: 400, code: "VALIDATION_ERROR", message: "Unknown employee." };
+    }
+    // Deactivated services stay on old appointments, so only a new choice of service is checked.
+    if (checkService) {
+      const service = await serviceCatalog.findById(fields.serviceId);
+      if (service === null || !service.active) {
+        return { status: 400, code: "VALIDATION_ERROR", message: "Unknown or inactive service." };
+      }
     }
     if (await appointments.hasOverlap(fields.employeeId, fields.start, fields.end, exceptId)) {
       return {
@@ -104,6 +112,11 @@ export function createAppointmentsRouter(): Router {
     return null;
   }
 
+  // Service names are read at response time, so a rename shows on every existing appointment (AC11).
+  async function nameOf(req: Request, docs: AppointmentDoc[]): Promise<Map<string, string>> {
+    return req.app.locals.services.serviceCatalog.findNames(docs.map((doc) => doc.serviceId));
+  }
+
   router.get("/", async (req, res) => {
     const { appointments } = req.app.locals.services;
     const { from, to } = req.query;
@@ -112,7 +125,10 @@ export function createAppointmentsRouter(): Router {
       return;
     }
     const docs = await appointments.listBetween(new Date(from), new Date(to));
-    res.json({ appointments: docs.map(toJson) });
+    const names = await nameOf(req, docs);
+    res.json({
+      appointments: docs.map((doc) => toJson(doc, names.get(doc.serviceId.toHexString()) ?? "")),
+    });
   });
 
   router.post("/", async (req, res) => {
@@ -123,13 +139,14 @@ export function createAppointmentsRouter(): Router {
       return;
     }
     const fields = parsed as AppointmentFields;
-    const refusal = await checkFields(fields, undefined, req);
+    const refusal = await checkFields(fields, undefined, true, req);
     if (refusal !== null) {
       sendError(res, refusal.status, refusal.code, refusal.message);
       return;
     }
     const doc = await appointments.insert(fields, res.locals.staff.id, res.locals.now);
-    res.status(201).json(toJson(doc));
+    const names = await nameOf(req, [doc]);
+    res.status(201).json(toJson(doc, names.get(doc.serviceId.toHexString()) ?? ""));
   });
 
   router.patch("/:id", async (req, res) => {
@@ -161,7 +178,9 @@ export function createAppointmentsRouter(): Router {
       end: current.end,
       ...parsed,
     };
-    const refusal = await checkFields(merged, id, req);
+    const serviceChanged =
+      parsed.serviceId !== undefined && !parsed.serviceId.equals(current.serviceId);
+    const refusal = await checkFields(merged, id, serviceChanged, req);
     if (refusal !== null) {
       sendError(res, refusal.status, refusal.code, refusal.message);
       return;
@@ -171,7 +190,8 @@ export function createAppointmentsRouter(): Router {
       sendError(res, 404, "NOT_FOUND", "Appointment not found.");
       return;
     }
-    res.json(toJson(doc));
+    const names = await nameOf(req, [doc]);
+    res.json(toJson(doc, names.get(doc.serviceId.toHexString()) ?? ""));
   });
 
   router.post("/:id/cancel", async (req, res) => {
@@ -189,7 +209,8 @@ export function createAppointmentsRouter(): Router {
       sendError(res, 404, "NOT_FOUND", "Appointment not found.");
       return;
     }
-    res.json(toJson(doc));
+    const names = await nameOf(req, [doc]);
+    res.json(toJson(doc, names.get(doc.serviceId.toHexString()) ?? ""));
   });
 
   return router;

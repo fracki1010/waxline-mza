@@ -10,7 +10,7 @@ import { startTestDb } from "./helpers.js";
 const ORIGIN = "https://app.example";
 const T0 = new Date("2026-03-02T12:00:00Z");
 const at = (hour: number, minute = 0) => new Date(Date.UTC(2026, 2, 2, hour, minute)).toISOString();
-const SERVICE = new ObjectId().toHexString();
+let SERVICE = "";
 
 let db: Db;
 let stop: () => Promise<void>;
@@ -53,6 +53,10 @@ beforeAll(async () => {
   const sessions = createSessions(db);
   ana = await addStaff("ana");
   bruno = await addStaff("bruno");
+  const service = await db
+    .collection("services")
+    .insertOne({ name: "Lavado completo", active: true, createdAt: T0 });
+  SERVICE = service.insertedId.toHexString();
   cookie = `__session=${(await sessions.create(ana, T0)).id}`;
   app = createApp({ db, now: () => T0, allowedOrigins: [ORIGIN] });
 });
