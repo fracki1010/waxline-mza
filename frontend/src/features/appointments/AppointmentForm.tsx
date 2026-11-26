@@ -154,24 +154,29 @@ export function AppointmentForm({ day, initial, onDone }: Props) {
             <option value="">{messages.customSlot}</option>
           </select>
         </label>
-        <label>
-          {messages.startLabel}
-          <input
-            type="time"
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
-            required
-          />
-        </label>
-        <label>
-          {messages.endLabel}
-          <input
-            type="time"
-            value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
-            required
-          />
-        </label>
+        {/* Fixed slots already set start and end; the time fields are only for a custom slot. */}
+        {slot === "" && (
+          <>
+            <label>
+              {messages.startLabel}
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                required
+              />
+            </label>
+            <label>
+              {messages.endLabel}
+              <input
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                required
+              />
+            </label>
+          </>
+        )}
       </fieldset>
       {error !== null && <p role="alert">{error}</p>}
       <div className="form-actions">

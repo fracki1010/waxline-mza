@@ -39,13 +39,13 @@ export function DayView() {
         {messages.agendaTitle}
       </h1>
       <div className="day-nav">
-        <button type="button" onClick={() => setDay(shiftDay(day, -1))}>
-          {messages.previousDay}
-        </button>
         <label>
           {messages.dayLabel}
           <input type="date" value={day} onChange={(e) => setDay(e.target.value)} />
         </label>
+        <button type="button" onClick={() => setDay(shiftDay(day, -1))}>
+          {messages.previousDay}
+        </button>
         <button type="button" onClick={() => setDay(shiftDay(day, 1))}>
           {messages.nextDay}
         </button>
