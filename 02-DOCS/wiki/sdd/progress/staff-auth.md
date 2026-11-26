@@ -160,3 +160,6 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 - risk: tier 2; panel of 3 (auth regression, accessibility and offline UX, tests), read-only: 0 blockers. Fixed: banner shown on any error (now offline or `NetworkError` only), focus lost on the first-load error screen and stolen by the loading screen on cold start, no pending state for `aria-disabled` buttons, a CSS check that passed on `outline: none`, axe never shown able to fail, missing states and landmark checks, test cleanup. Two real bugs found by red tests: mutations paused while offline, and a double click on Salir sending two sign-outs. Parked: single announcement for alert plus focus move, automatic sign-out retry, `h1:focus`, forced-colors and dark mode. Round 2 was NOT an independent re-review: verified by tests, 18 mutants and my own runs
 - controls: tests ok, lint ok, typecheck ok, build ok, a11y ok in jsdom (zero axe violations except `color-contrast`, disabled), traceability ok (constitution 19 and 20), audit ok
 - not verified: real screen reader, measured contrast, real devices and browsers (44 px targets, focus ring, iOS keyboard, real offline events); real cold start offline outside jsdom
+
+## T019 — 2026-11-26 (correction)
+- status: complete. Owner approved in chat; committed on main; the pre-commit hook ran and passed.
