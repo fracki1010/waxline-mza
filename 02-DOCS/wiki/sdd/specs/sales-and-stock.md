@@ -1,18 +1,18 @@
 ---
 type: spec
 title: Spec — Sales, stock, customers and vehicles
-description: WHAT and WHY for products in stock, customers with their vehicles, and sales. Draft: assumptions need owner approval.
+description: WHAT and WHY for products in stock, customers with their vehicles, and sales. Approved by owner with assumptions A1 to A7 as written.
 tags: [sdd, spec]
 timestamp: 2026-11-26T00:00:00Z
 topic: sdd
 slug: sales-and-stock
 branch: main
-status: draft
+status: approved
 ---
 
 # Spec — Sales, stock, customers and vehicles
 
-> Slug: `sales-and-stock` · Status: **draft**, not approved · Created: 2026-11-26
+> Slug: `sales-and-stock` · Status: approved by owner 2026-11-26 (A1–A7 as written, stock also sold to customers) · Created: 2026-11-26
 > Inherits: [constitution](../constitution.md) · Depends on: [staff-auth](staff-auth.md), [appointments](appointments.md)
 
 ## Problem & why
