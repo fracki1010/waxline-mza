@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../../shared/api";
 import { refusalOf } from "../../shared/apiRefusal";
+import { sendQueueable } from "../../shared/offlineWrite";
 import { messages } from "../../shared/messages";
 import { newClientId } from "../../shared/outbox";
-import { queueWithId } from "../../shared/offlineWrite";
 
 export interface Vehicle {
   id: string;
@@ -39,18 +39,18 @@ export function useAddCustomer() {
     mutationFn: async (input: { name: string; phone: string }) => {
       const clientId = newClientId();
       const body = { ...input, clientId };
-      if (
-        await queueWithId(clientId, {
-          method: "POST",
-          path: "/api/customers",
-          body,
-          label: messages.outboxCustomer,
-        })
-      ) {
-        return;
-      }
-      const res = await apiFetch("/api/customers", { method: "POST", body: JSON.stringify(body) });
-      if (!res.ok) throw await refusalOf(res);
+      await sendQueueable(
+        clientId,
+        { method: "POST", path: "/api/customers", body, label: messages.outboxCustomer },
+        async () => {
+          const res = await apiFetch("/api/customers", {
+            method: "POST",
+            body: JSON.stringify(body),
+          });
+          if (!res.ok) throw await refusalOf(res);
+          return res.json();
+        },
+      );
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: [KEY] }),
   });
@@ -71,18 +71,15 @@ export function useAddVehicle() {
       const clientId = newClientId();
       const path = `/api/customers/${customerId}/vehicles`;
       const body = { plate, model, clientId };
-      if (
-        await queueWithId(clientId, {
-          method: "POST",
-          path,
-          body,
-          label: messages.outboxVehicle,
-        })
-      ) {
-        return;
-      }
-      const res = await apiFetch(path, { method: "POST", body: JSON.stringify(body) });
-      if (!res.ok) throw await refusalOf(res);
+      await sendQueueable(
+        clientId,
+        { method: "POST", path, body, label: messages.outboxVehicle },
+        async () => {
+          const res = await apiFetch(path, { method: "POST", body: JSON.stringify(body) });
+          if (!res.ok) throw await refusalOf(res);
+          return res.json();
+        },
+      );
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: [KEY] }),
   });

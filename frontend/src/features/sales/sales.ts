@@ -3,7 +3,7 @@ import { apiFetch } from "../../shared/api";
 import { refusalOf } from "../../shared/apiRefusal";
 import { messages } from "../../shared/messages";
 import { newClientId } from "../../shared/outbox";
-import { queueWithId, requireOnline } from "../../shared/offlineWrite";
+import { requireOnline, sendQueueable } from "../../shared/offlineWrite";
 import { dayRange } from "../appointments/slots";
 
 export interface SaleLine {
@@ -54,18 +54,15 @@ export function useRecordSale() {
       // Stock is taken on the server when the sale is replayed; the clientId keeps a retry from taking it twice.
       const clientId = newClientId();
       const body = { ...input, clientId };
-      if (
-        await queueWithId(clientId, {
-          method: "POST",
-          path: "/api/sales",
-          body,
-          label: messages.outboxSale,
-        })
-      ) {
-        return;
-      }
-      const res = await apiFetch("/api/sales", { method: "POST", body: JSON.stringify(body) });
-      if (!res.ok) throw await refusalOf(res);
+      await sendQueueable(
+        clientId,
+        { method: "POST", path: "/api/sales", body, label: messages.outboxSale },
+        async () => {
+          const res = await apiFetch("/api/sales", { method: "POST", body: JSON.stringify(body) });
+          if (!res.ok) throw await refusalOf(res);
+          return res.json();
+        },
+      );
     },
     onSettled: () => {
       // Stock changes too, so the product list must be refreshed with the sale.

@@ -1,6 +1,7 @@
 import { ApiRefusal } from "./apiRefusal";
+import { NetworkError } from "./api";
 import { messages } from "./messages";
-import { newClientId, outbox, type NewEntry } from "./outbox";
+import { outbox, type NewEntry } from "./outbox";
 
 // Refused before any request is made: the change would be unsafe to replay later (stock, prices, status).
 export const OFFLINE_BLOCKED = "OFFLINE_BLOCKED";
@@ -13,17 +14,23 @@ export function requireOnline(): void {
   if (isOffline()) throw new ApiRefusal(OFFLINE_BLOCKED, messages.offlineBlocked);
 }
 
-// Stores the write for later when offline and reports true; online it reports false and the caller sends.
-export async function queueWhenOffline(entry: Omit<NewEntry, "clientId">): Promise<boolean> {
-  return queueWithId(newClientId(), entry);
-}
-
-// Same as queueWhenOffline, but the caller already put this clientId in the body it will send online.
-export async function queueWithId(
+// Sends a replayable write, or keeps it in the outbox when the browser is offline or the server cannot
+// be reached. The clientId goes into the body, so a replay after a lost response is answered, not repeated.
+// Resolves to null when the write was queued.
+export async function sendQueueable<T>(
   clientId: string,
   entry: Omit<NewEntry, "clientId">,
-): Promise<boolean> {
-  if (!isOffline()) return false;
-  await outbox.enqueue({ ...entry, clientId });
-  return true;
+  send: () => Promise<T>,
+): Promise<T | null> {
+  const queue = async (): Promise<null> => {
+    await outbox.enqueue({ ...entry, clientId });
+    return null;
+  };
+  if (isOffline()) return queue();
+  try {
+    return await send();
+  } catch (error) {
+    if (error instanceof NetworkError) return queue();
+    throw error;
+  }
 }

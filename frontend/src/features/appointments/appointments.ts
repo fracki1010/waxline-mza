@@ -3,7 +3,7 @@ import { apiFetch } from "../../shared/api";
 import { refusalOf } from "../../shared/apiRefusal";
 import { messages } from "../../shared/messages";
 import { newClientId } from "../../shared/outbox";
-import { queueWithId, requireOnline } from "../../shared/offlineWrite";
+import { requireOnline, sendQueueable } from "../../shared/offlineWrite";
 import { dayRange } from "./slots";
 
 export interface Appointment {
@@ -54,32 +54,35 @@ function serialise(input: Partial<AppointmentInput>) {
   };
 }
 
-// Creates when `id` is absent, otherwise edits that appointment. A create made offline is queued
-// and resolves to null; an edit needs the server's revision, so it is refused offline.
+// Creates when `id` is absent, otherwise edits that appointment. A create is queued when offline or
+// unreachable and resolves to null; an edit needs the server's revision, so it is refused offline.
 export function useSaveAppointment(id?: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: AppointmentInput): Promise<Appointment | null> => {
-      if (id) requireOnline();
-      const clientId = newClientId();
-      const body = id ? serialise(input) : { ...serialise(input), clientId };
-      if (
-        !id &&
-        (await queueWithId(clientId, {
-          method: "POST",
-          path: "/api/appointments",
-          body,
-          label: messages.outboxAppointment,
-        }))
-      ) {
-        return null;
+      if (id) {
+        requireOnline();
+        const res = await apiFetch(`/api/appointments/${id}`, {
+          method: "PATCH",
+          body: JSON.stringify(serialise(input)),
+        });
+        if (!res.ok) throw await refusalOf(res);
+        return (await res.json()) as Appointment;
       }
-      const res = await apiFetch(id ? `/api/appointments/${id}` : "/api/appointments", {
-        method: id ? "PATCH" : "POST",
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw await refusalOf(res);
-      return (await res.json()) as Appointment;
+      const clientId = newClientId();
+      const body = { ...serialise(input), clientId };
+      return sendQueueable(
+        clientId,
+        { method: "POST", path: "/api/appointments", body, label: messages.outboxAppointment },
+        async () => {
+          const res = await apiFetch("/api/appointments", {
+            method: "POST",
+            body: JSON.stringify(body),
+          });
+          if (!res.ok) throw await refusalOf(res);
+          return (await res.json()) as Appointment;
+        },
+      );
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: [KEY] }),
   });

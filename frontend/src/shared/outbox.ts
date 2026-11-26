@@ -15,7 +15,7 @@ export interface OutboxEntry {
 
 export type NewEntry = Omit<OutboxEntry, "status" | "createdAt">;
 
-const store = createStore("waxline", "outbox");
+const store = createStore("waxline-outbox", "outbox");
 const KEY = "entries";
 
 // Listeners run after each stored change so screens can show pending and rejected entries live.

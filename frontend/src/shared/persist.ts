@@ -5,7 +5,7 @@ import type { PersistedClient, Persister } from "@tanstack/query-persist-client-
 export const CACHE_BUSTER = "1";
 export const CACHE_MAX_AGE = 24 * 60 * 60 * 1000;
 
-const store = createStore("waxline", "query-cache");
+const store = createStore("waxline-query-cache", "query-cache");
 const KEY = "client";
 
 // Reads and writes never throw into React Query: a broken store means no cache, not a broken app.
