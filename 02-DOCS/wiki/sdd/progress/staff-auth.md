@@ -172,3 +172,6 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 - files: backend/{Dockerfile,.dockerignore,package-lock.json,test/deploy-config.test.ts}, firebase.json, .firebaserc, deploy/{deploy-api.sh,README.md}
 - not verified: real Atlas, gcloud, `firebase deploy`, the `/api/**` rewrite on a live Hosting URL (T016), the deploy script itself, Secret Manager secret and IAM
 - open for the owner: concurrency 4, max-instances 2, min-instances 0, the Hosting origin in ALLOWED_ORIGINS, region us-central1 against the Atlas region
+
+## T015 — 2026-11-26 (correction)
+- status: complete. Owner approved in chat; committed on main; the pre-commit hook ran and passed. The defaults (concurrency 4, max-instances 2, min-instances 0, the Hosting origin placeholder, us-central1) were not re-confirmed item by item; they stay editable in deploy/deploy-api.sh before T016.
