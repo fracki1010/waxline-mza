@@ -6,6 +6,7 @@ export interface ServiceDoc {
   _id: ObjectId;
   name: string;
   active: boolean;
+  price?: number; // whole pesos; services recorded before pricing have none
   createdBy: string;
   updatedBy: string;
   createdAt: Date;
@@ -29,10 +30,15 @@ export function createServiceModel(db: Db) {
       return new Map(docs.map((doc) => [doc._id.toHexString(), doc.name]));
     },
 
-    async insert(name: string, by: string, now: Date): Promise<ServiceDoc> {
+    async insert(
+      input: { name: string; price?: number },
+      by: string,
+      now: Date,
+    ): Promise<ServiceDoc> {
       const doc: Omit<ServiceDoc, "_id"> = {
-        name,
+        name: input.name,
         active: true,
+        ...(input.price === undefined ? {} : { price: input.price }),
         createdBy: by,
         updatedBy: by,
         createdAt: now,
@@ -45,7 +51,7 @@ export function createServiceModel(db: Db) {
     // Only the fields given change; services are never deleted, so old appointments keep their name.
     async update(
       id: ObjectId,
-      changes: { name?: string; active?: boolean },
+      changes: { name?: string; active?: boolean; price?: number },
       by: string,
       now: Date,
     ): Promise<ServiceDoc | null> {
