@@ -20,4 +20,5 @@ Stage: deployed to production 2026-11-26 (owner approved). Accessibility (axe) c
 
 ## Frontend redeploy — accessibility fixes
 - Hosting redeployed 2026-11-26 with commit `ed0427f`; bundle `index-D3gRNI23.js` served. Backend unchanged (still `waxline-api-00006-f6q`).
-- Accessibility check done with axe in jsdom; contrast, real browser and screen reader checks are still open.
+- Accessibility: axe in jsdom (unit tests) and axe in real Chromium with a phone viewport (`frontend/e2e/a11y.spec.ts`) found no violations or incomplete results on agenda, form and services, contrast included.
+- Still open: screen reader check and a real phone check (owner).
