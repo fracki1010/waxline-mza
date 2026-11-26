@@ -184,3 +184,7 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 
 ## T017 — 2026-11-26 (closure, partial)
 - status: closed with open verification. Spec gate PASS (structural). AC5, AC6 and AC8 are open and recorded in verifications/staff-auth-2026-11-26.md; the feature is not fully verified until they are.
+
+## Closure update — 2026-11-26
+- AC5 and AC6: owner confirmed on iPhone. AC8: owner confirmed the check passed (method not recorded).
+- Worklog: `02-DOCS/raw/worklog/2026-11-26-staff-auth.md`.
