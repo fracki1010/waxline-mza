@@ -6,8 +6,22 @@ import { AppointmentForm } from "./AppointmentForm";
 import { useAppointments, useCancelAppointment, type Appointment } from "./appointments";
 import { todayLocal } from "./slots";
 
+// 24-hour clock, matching the time inputs and the fixed slot list.
 const time = (iso: string) =>
-  new Date(iso).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+  new Date(iso).toLocaleTimeString("es-AR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+// Moves a YYYY-MM-DD day by whole days using local calendar arithmetic; keeps it unchanged if the input is cleared.
+function shiftDay(day: string, offset: number): string {
+  const date = new Date(`${day}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return day;
+  date.setDate(date.getDate() + offset);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
 
 export function DayView() {
   const heading = useScreenFocus();
@@ -24,10 +38,18 @@ export function DayView() {
       <h1 ref={heading} tabIndex={-1}>
         {messages.agendaTitle}
       </h1>
-      <label>
-        {messages.dayLabel}{" "}
-        <input type="date" value={day} onChange={(e) => setDay(e.target.value)} />
-      </label>{" "}
+      <div className="day-nav">
+        <button type="button" onClick={() => setDay(shiftDay(day, -1))}>
+          {messages.previousDay}
+        </button>
+        <label>
+          {messages.dayLabel}
+          <input type="date" value={day} onChange={(e) => setDay(e.target.value)} />
+        </label>
+        <button type="button" onClick={() => setDay(shiftDay(day, 1))}>
+          {messages.nextDay}
+        </button>
+      </div>
       <button type="button" className="day-new" onClick={() => setEditing("new")}>
         {messages.newAppointment}
       </button>
@@ -45,23 +67,27 @@ export function DayView() {
       {cancel.isError && <p role="alert">{messages.genericError}</p>}
       <ul>
         {appointments.data?.map((item) => (
-          <li key={item.id}>
-            <strong>
+          <li
+            key={item.id}
+            className={item.status === "cancelled" ? "appt appt-cancelled" : "appt"}
+          >
+            <span className="appt-time">
               {time(item.start)}–{time(item.end)}
-            </strong>{" "}
-            {item.serviceName} · {employeeName(item.employeeId)} · {item.customerName} ·{" "}
-            {item.plate} {item.model}
-            {item.status === "cancelled" && <span> ({messages.cancelled})</span>}
+            </span>
+            <span className="appt-detail">
+              {item.serviceName} · {employeeName(item.employeeId)} · {item.customerName} ·{" "}
+              {item.plate} {item.model}
+              {item.status === "cancelled" && <span> ({messages.cancelled})</span>}
+            </span>
             {item.status === "active" && (
-              <>
-                {" "}
+              <span className="appt-actions">
                 <button
                   type="button"
                   aria-label={`${messages.editAppointment}: ${item.customerName}, ${time(item.start)}`}
                   onClick={() => setEditing(item)}
                 >
                   {messages.editAppointment}
-                </button>{" "}
+                </button>
                 <button
                   type="button"
                   aria-label={`${messages.cancelAppointment}: ${item.customerName}, ${time(item.start)}`}
@@ -69,7 +95,7 @@ export function DayView() {
                 >
                   {messages.cancelAppointment}
                 </button>
-              </>
+              </span>
             )}
           </li>
         ))}

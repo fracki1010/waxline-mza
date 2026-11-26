@@ -1,6 +1,21 @@
+/* Tokens. Contrast notes: --ink and --muted pass 4.5:1 on white; --line is 4.8:1 (WCAG 1.4.11 needs 3:1 for control borders). */
+:root {
+  --ink: #111827;
+  --muted: #4b5563;
+  --line: #6b7280;
+  --subtle: #f3f4f6;
+  --accent: #1a56db;
+  --danger: #b00020;
+  --radius: 8px;
+}
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--ink);
+  background: #ffffff;
+  -webkit-text-size-adjust: 100%;
 }
 .screen {
   display: block;
@@ -8,23 +23,83 @@ body {
   margin: 0 auto;
   padding: 1rem;
 }
+h1 {
+  font-size: 1.5rem;
+  line-height: 1.25;
+  margin: 0.25rem 0 1rem;
+  overflow-wrap: anywhere;
+}
 .form {
   display: grid;
   gap: 1rem;
+}
+fieldset {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+legend {
+  padding: 0;
+  margin-bottom: 0.25rem;
+  color: var(--muted);
+  font-size: 0.875rem;
 }
 label {
   display: grid;
   gap: 0.25rem;
 }
-h1 {
-  overflow-wrap: anywhere;
+ul {
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.appt {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  background: var(--subtle);
+  border-radius: var(--radius);
+}
+.appt-time {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.appt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+.appt-cancelled {
+  color: var(--muted);
+}
+.day-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.day-nav label {
+  flex: 1 1 10rem;
+}
+.day-new {
+  width: 100%;
+  margin: 0 0 1rem;
+}
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 select {
   min-height: 44px;
   font: inherit;
-}
-.day-new {
-  margin-top: 0.5rem;
 }
 input,
 button {
@@ -32,9 +107,51 @@ button {
   font: inherit;
   padding: 0 0.75rem;
 }
+input,
+select,
+button {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #ffffff;
+  color: var(--ink);
+}
 input {
   width: 100%;
   box-sizing: border-box;
+}
+button {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  transition:
+    transform 120ms ease-out,
+    background-color 120ms ease-out;
+}
+/* Primary action: the one a person is expected to press on the screen. */
+button[type="submit"]:not([aria-disabled="true"]),
+.day-new {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+  font-weight: 600;
+}
+button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+@media (hover: hover) and (pointer: fine) {
+  button:hover:not(:disabled):not([aria-disabled="true"]) {
+    background: var(--subtle);
+  }
+  button[type="submit"]:not([aria-disabled="true"]):hover:not(:disabled),
+  .day-new:hover {
+    background: #1747b5;
+  }
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: progress;
 }
 /* Pending: #4b5563 on #e5e7eb is 6.10:1 (>= 4.5:1). */
 button[aria-disabled="true"] {
@@ -47,8 +164,12 @@ button:focus-visible {
   outline: 3px solid #1a56db;
   outline-offset: 2px;
 }
+select:focus-visible {
+  outline: 3px solid #1a56db;
+  outline-offset: 2px;
+}
 [role="alert"] {
-  color: #b00020;
+  color: var(--danger);
 }
 /* Empty but still rendered (not display: none) so screen readers keep the live region. */
 .banner:empty {
@@ -60,4 +181,10 @@ button:focus-visible {
   padding: 0.5rem 0.75rem;
   background: #fff4cc;
   color: #4a3b00;
+  border-radius: var(--radius);
+}
+@media (prefers-reduced-motion: reduce) {
+  button {
+    transition: none;
+  }
 }

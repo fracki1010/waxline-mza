@@ -85,83 +85,103 @@ export function AppointmentForm({ day, initial, onDone }: Props) {
 
   return (
     <form
+      className="form"
       onSubmit={submit}
       aria-label={initial ? messages.editAppointment : messages.newAppointment}
     >
-      <label>
-        {messages.customerNameLabel}
-        <input value={customerName} onChange={(e) => setCustomerName(e.target.value)} required />
-      </label>
-      <label>
-        {messages.customerPhoneLabel}
-        <input
-          type="tel"
-          value={customerPhone}
-          onChange={(e) => setCustomerPhone(e.target.value)}
-          required
-        />
-      </label>
-      <label>
-        {messages.plateLabel}
-        <input value={plate} onChange={(e) => setPlate(e.target.value)} required />
-      </label>
-      <label>
-        {messages.modelLabel}
-        <input value={model} onChange={(e) => setModel(e.target.value)} required />
-      </label>
-      <label>
-        {messages.serviceLabel}
-        <select value={serviceId} onChange={(e) => setServiceId(e.target.value)} required>
-          <option value="">—</option>
-          {selectableServices.map((service) => (
-            <option key={service.id} value={service.id}>
-              {service.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        {messages.employeeLabel}
-        <select value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} required>
-          <option value="">—</option>
-          {staff.data?.map((member) => (
-            <option key={member.id} value={member.id}>
-              {member.displayName}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        {messages.slotLabel}
-        <select value={slot} onChange={(e) => pickSlot(e.target.value)}>
-          {FIXED_SLOT_STARTS.map((time) => (
-            <option key={time} value={time}>
-              {time}
-            </option>
-          ))}
-          <option value="">{messages.customSlot}</option>
-        </select>
-      </label>
-      <label>
-        {messages.startLabel}
-        <input
-          type="time"
-          value={startTime}
-          onChange={(e) => setStartTime(e.target.value)}
-          required
-        />
-      </label>
-      <label>
-        {messages.endLabel}
-        <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} required />
-      </label>
+      <fieldset>
+        <legend>{messages.customerGroup}</legend>
+        <label>
+          {messages.customerNameLabel}
+          <input value={customerName} onChange={(e) => setCustomerName(e.target.value)} required />
+        </label>
+        <label>
+          {messages.customerPhoneLabel}
+          <input
+            type="tel"
+            value={customerPhone}
+            onChange={(e) => setCustomerPhone(e.target.value)}
+            required
+          />
+        </label>
+      </fieldset>
+      <fieldset>
+        <legend>{messages.vehicleGroup}</legend>
+        <label>
+          {messages.plateLabel}
+          <input value={plate} onChange={(e) => setPlate(e.target.value)} required />
+        </label>
+        <label>
+          {messages.modelLabel}
+          <input value={model} onChange={(e) => setModel(e.target.value)} required />
+        </label>
+      </fieldset>
+      <fieldset>
+        <legend>{messages.serviceGroup}</legend>
+        <label>
+          {messages.serviceLabel}
+          <select value={serviceId} onChange={(e) => setServiceId(e.target.value)} required>
+            <option value="">—</option>
+            {selectableServices.map((service) => (
+              <option key={service.id} value={service.id}>
+                {service.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          {messages.employeeLabel}
+          <select value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} required>
+            <option value="">—</option>
+            {staff.data?.map((member) => (
+              <option key={member.id} value={member.id}>
+                {member.displayName}
+              </option>
+            ))}
+          </select>
+        </label>
+      </fieldset>
+      <fieldset>
+        <legend>{messages.scheduleGroup}</legend>
+        <label>
+          {messages.slotLabel}
+          <select value={slot} onChange={(e) => pickSlot(e.target.value)}>
+            {FIXED_SLOT_STARTS.map((time) => (
+              <option key={time} value={time}>
+                {time}
+              </option>
+            ))}
+            <option value="">{messages.customSlot}</option>
+          </select>
+        </label>
+        <label>
+          {messages.startLabel}
+          <input
+            type="time"
+            value={startTime}
+            onChange={(e) => setStartTime(e.target.value)}
+            required
+          />
+        </label>
+        <label>
+          {messages.endLabel}
+          <input
+            type="time"
+            value={endTime}
+            onChange={(e) => setEndTime(e.target.value)}
+            required
+          />
+        </label>
+      </fieldset>
       {error !== null && <p role="alert">{error}</p>}
-      <button type="submit" disabled={save.isPending}>
-        {messages.saveAppointment}
-      </button>{" "}
-      <button type="button" onClick={onDone}>
-        {messages.cancelForm}
-      </button>
+      <div className="form-actions">
+        <button type="submit" disabled={save.isPending}>
+          {messages.saveAppointment}
+        </button>
+        <button type="button" onClick={onDone}>
+          {messages.cancelForm}
+        </button>
+      </div>
     </form>
   );
 }
