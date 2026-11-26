@@ -31,10 +31,16 @@ status: drafted
 1. Model, indexes and the overlap service, with unit tests for the boundary cases (AC3, AC5).
 2. Routes: create, edit, cancel, list by day. Edit and create both run the overlap check (AC3, AC6, AC7, AC8, AC9).
 3. Day view and create/edit forms, fixed-slot picker and custom time (AC1, AC2, AC4).
-4. Accessibility and offline behaviour checks on the new screens, following the staff-auth pattern.
+4. Services: model, list, create, rename, deactivate routes and screen (AC10–AC13).
+5. Accessibility and offline behaviour checks on the new screens, following the staff-auth pattern.
 
-## Open points (need owner decision before task breakdown)
-- **Service list (A3):** the owner confirmed staff maintain the service list in the app, but the spec has no criteria for it. Options: (a) a small screen to add, rename and deactivate services, which is a new slice with its own acceptance criteria; (b) a fixed list in code for the first slice, changed by a developer. Decision needed.
+## Service list (decided 2026-11-26: staff manage services in the app)
+- `services` collection: name, active flag, timestamps. Name is trimmed and must not be empty (AC13).
+- Routes: list, create, rename, deactivate. Deactivation is a flag change, never a delete.
+- Appointment create and edit accept only active services; existing appointments keep their stored service reference and name (AC12).
+- Screen: a small list with add, rename and deactivate actions, reached from the same area as the day view.
+
+## Open points
 - **Session expiry during edit:** the app already handles lost sessions for staff-auth; the appointment forms should reuse that behaviour. No separate decision expected.
 
 ## Risks

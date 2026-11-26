@@ -7,7 +7,7 @@ timestamp: 2026-11-26T00:00:00Z
 topic: sdd
 slug: appointments
 branch: main
-status: approved
+status: reopened
 ---
 
 # Spec — Appointments
@@ -76,10 +76,20 @@ Each appointment holds:
 - AC8: The day's list shows only that day's appointments, ordered by start time.
 - AC9: All appointment actions require a signed-in staff session; without one the API refuses with the standard error shape.
 
+### Service list (added 2026-11-26)
+Staff maintain the list of services that appointments can use.
+- Each service has a name and an active flag.
+- Staff can add a service, rename it, and deactivate it. Deactivated services stay on existing appointments but cannot be chosen for new ones.
+- Services are never deleted, so past appointments keep their service name.
+- AC10: Staff can add a service with a name and see it in the service list.
+- AC11: Staff can rename a service; appointments that use it show the new name.
+- AC12: Staff can deactivate a service; it no longer appears when creating or editing an appointment, but existing appointments still show it.
+- AC13: A service name cannot be empty or only spaces; the API refuses it with the standard error shape.
+
 ## Assumptions (confirmed by owner 2026-11-26)
 - A1: Cancelled appointments are kept with a status, not deleted.
 - A2: Custom times must still fall on the same day as the list they appear in.
-- A3: The service list is maintained by staff in the app; its content is not part of this spec.
+- A3: The service list is maintained by staff in the app; the criteria are in the Service list section (AC10–AC13).
 - A4: Times are in the car wash's local time zone.
 
 ## Open questions
