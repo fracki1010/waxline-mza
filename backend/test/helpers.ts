@@ -6,7 +6,7 @@ const uri = process.env.MONGODB_TEST_URI ?? "mongodb://127.0.0.1:27018";
 export async function startTestDb(): Promise<{ db: Db; stop(): Promise<void> }> {
   let client: MongoClient;
   try {
-    client = await MongoClient.connect(uri, { serverSelectionTimeoutMS: 3000 });
+    client = await MongoClient.connect(uri, { serverSelectionTimeoutMS: 3000, maxPoolSize: 5 });
   } catch (cause) {
     throw new Error(
       `Test MongoDB is not reachable at ${uri}. Start it with: bash scripts/test-db.sh up`,

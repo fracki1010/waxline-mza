@@ -3,6 +3,8 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     allowOnly: false,
+    // Argon2 hashing and index builds are real work; the 5 s default fails under a busy machine.
+    testTimeout: 15_000,
     include: ["test/**/*.test.ts"],
     coverage: {
       provider: "v8",
