@@ -7,12 +7,12 @@ timestamp: 2026-11-26T00:00:00Z
 topic: sdd
 slug: appointments
 branch: main
-status: reopened
+status: approved
 ---
 
 # Spec — Appointments
 
-> Slug: `appointments` · Status: approved by owner 2026-11-26, A1–A4 confirmed · Created: 2026-11-26
+> Slug: `appointments` · Status: approved by owner 2026-11-26 (A1–A4 and service list confirmed) · Created: 2026-11-26
 > Inherits: [constitution](../constitution.md) · Depends on: [staff-auth](staff-auth.md)
 
 ## Problem & why
