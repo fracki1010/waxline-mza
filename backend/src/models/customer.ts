@@ -8,6 +8,7 @@ export interface CustomerDoc {
   _id: ObjectId;
   name: string;
   phone: string;
+  clientId?: string;
   createdBy: string;
   createdAt: Date;
 }
@@ -17,6 +18,7 @@ export interface VehicleDoc {
   customerId: ObjectId;
   plate: string;
   model: string;
+  clientId?: string;
   createdBy: string;
   createdAt: Date;
 }
@@ -55,12 +57,26 @@ export function createCustomerModel(db: Db) {
       return customers.find({}).sort({ name: 1 }).limit(SEARCH_LIMIT).toArray();
     },
 
+    async findByClientId(clientId: string): Promise<CustomerDoc | null> {
+      return customers.findOne({ clientId });
+    },
+
+    async findVehicleByClientId(clientId: string): Promise<VehicleDoc | null> {
+      return vehicles.findOne({ clientId });
+    },
+
     async insert(
       input: { name: string; phone: string },
       by: string,
       now: Date,
+      clientId?: string,
     ): Promise<CustomerDoc> {
-      const doc: Omit<CustomerDoc, "_id"> = { ...input, createdBy: by, createdAt: now };
+      const doc: Omit<CustomerDoc, "_id"> = {
+        ...input,
+        ...(clientId ? { clientId } : {}),
+        createdBy: by,
+        createdAt: now,
+      };
       const { insertedId } = await customers.insertOne(doc as CustomerDoc);
       return { ...doc, _id: insertedId } as CustomerDoc;
     },
@@ -70,8 +86,15 @@ export function createCustomerModel(db: Db) {
       input: { plate: string; model: string },
       by: string,
       now: Date,
+      clientId?: string,
     ): Promise<VehicleDoc> {
-      const doc: Omit<VehicleDoc, "_id"> = { customerId, ...input, createdBy: by, createdAt: now };
+      const doc: Omit<VehicleDoc, "_id"> = {
+        customerId,
+        ...input,
+        ...(clientId ? { clientId } : {}),
+        createdBy: by,
+        createdAt: now,
+      };
       const { insertedId } = await vehicles.insertOne(doc as VehicleDoc);
       return { ...doc, _id: insertedId } as VehicleDoc;
     },

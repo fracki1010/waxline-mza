@@ -2,6 +2,7 @@ import { Router, type Request } from "express";
 import { ObjectId } from "mongodb";
 import { sendError } from "../middleware/errors.js";
 import type { AppointmentDoc, AppointmentFields } from "../models/appointment.js";
+import { isDuplicateKey, parseClientId } from "../models/client-id.js";
 
 const HEX24 = /^[0-9a-f]{24}$/i;
 const PHONE = /^[0-9+\-\s()]{6,30}$/;
@@ -133,6 +134,18 @@ export function createAppointmentsRouter(): Router {
 
   router.post("/", async (req, res) => {
     const { appointments } = req.app.locals.services;
+    const clientId = parseClientId((req.body ?? {}).clientId);
+    if (clientId === null) {
+      sendError(res, 400, "VALIDATION_ERROR", "Client id must be a UUID.");
+      return;
+    }
+    // A replay of an offline write returns the record created the first time, with 200 and no new row.
+    const replayed = clientId ? await appointments.findByClientId(clientId) : null;
+    if (replayed !== null) {
+      const names = await nameOf(req, [replayed]);
+      res.json(toJson(replayed, names.get(replayed.serviceId.toHexString()) ?? ""));
+      return;
+    }
     const parsed = parsePartial(req.body);
     if (parsed === null || REQUIRED.some((key) => parsed[key] === undefined)) {
       sendError(res, 400, "VALIDATION_ERROR", "All appointment fields are required.");
@@ -144,7 +157,18 @@ export function createAppointmentsRouter(): Router {
       sendError(res, refusal.status, refusal.code, refusal.message);
       return;
     }
-    const doc = await appointments.insert(fields, res.locals.staff.id, res.locals.now);
+    let doc: AppointmentDoc;
+    try {
+      doc = await appointments.insert(fields, res.locals.staff.id, res.locals.now, clientId);
+    } catch (error) {
+      // Two identical requests raced: the unique client id kept one; return that one.
+      const winner =
+        clientId && isDuplicateKey(error) ? await appointments.findByClientId(clientId) : null;
+      if (winner === null) throw error;
+      const names = await nameOf(req, [winner]);
+      res.json(toJson(winner, names.get(winner.serviceId.toHexString()) ?? ""));
+      return;
+    }
     const names = await nameOf(req, [doc]);
     res.status(201).json(toJson(doc, names.get(doc.serviceId.toHexString()) ?? ""));
   });

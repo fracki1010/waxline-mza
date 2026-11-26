@@ -2,6 +2,7 @@ import { Router } from "express";
 import { ObjectId } from "mongodb";
 import { sendError } from "../middleware/errors.js";
 import type { SaleDoc, SaleLine } from "../models/sale.js";
+import { isDuplicateKey, parseClientId } from "../models/client-id.js";
 
 const HEX24 = /^[0-9a-f]{24}$/i;
 const MAX_LINES = 50;
@@ -69,6 +70,17 @@ export function createSalesRouter(): Router {
     }
     if (raw.lines.length === 0 || raw.lines.length > MAX_LINES) {
       sendError(res, 400, "VALIDATION_ERROR", "A sale needs between 1 and 50 lines.");
+      return;
+    }
+    const clientId = parseClientId(raw.clientId);
+    if (clientId === null) {
+      sendError(res, 400, "VALIDATION_ERROR", "Client id must be a UUID.");
+      return;
+    }
+    // A replayed offline sale returns the sale created first. It takes no stock again.
+    const replayed = clientId ? await services.sales.findByClientId(clientId) : null;
+    if (replayed !== null) {
+      res.json(saleJson(replayed));
       return;
     }
 
@@ -182,6 +194,7 @@ export function createSalesRouter(): Router {
           customerId,
           vehicleId,
           ...(appointmentId ? { appointmentId } : {}),
+          ...(clientId ? { clientId } : {}),
           lines,
           total,
         },
@@ -191,7 +204,11 @@ export function createSalesRouter(): Router {
       res.status(201).json(saleJson(doc));
     } catch (error) {
       await giveBack();
-      throw error;
+      // Two identical sales raced: the unique client id kept one, and this request's stock is given back above.
+      const winner =
+        clientId && isDuplicateKey(error) ? await services.sales.findByClientId(clientId) : null;
+      if (winner === null) throw error;
+      res.json(saleJson(winner));
     }
   });
 

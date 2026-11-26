@@ -17,6 +17,7 @@ export interface SaleDoc {
   customerId: ObjectId;
   vehicleId: ObjectId;
   appointmentId?: ObjectId;
+  clientId?: string;
   lines: SaleLine[];
   total: number;
   status: "active" | "cancelled";
@@ -36,6 +37,10 @@ export function createSaleModel(db: Db) {
   return {
     async findById(id: ObjectId): Promise<SaleDoc | null> {
       return sales.findOne({ _id: id });
+    },
+
+    async findByClientId(clientId: string): Promise<SaleDoc | null> {
+      return sales.findOne({ clientId });
     },
 
     async list(from: Date, to: Date): Promise<SaleDoc[]> {

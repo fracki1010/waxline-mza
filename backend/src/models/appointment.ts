@@ -13,6 +13,7 @@ export interface AppointmentDoc {
   start: Date;
   end: Date;
   status: "active" | "cancelled";
+  clientId?: string;
   createdBy: string;
   updatedBy: string;
   createdAt: Date;
@@ -58,9 +59,19 @@ export function createAppointmentModel(db: Db) {
       return (await appointments.countDocuments(filter, { limit: 1 })) > 0;
     },
 
-    async insert(fields: AppointmentFields, by: string, now: Date): Promise<AppointmentDoc> {
+    async findByClientId(clientId: string): Promise<AppointmentDoc | null> {
+      return appointments.findOne({ clientId });
+    },
+
+    async insert(
+      fields: AppointmentFields,
+      by: string,
+      now: Date,
+      clientId?: string,
+    ): Promise<AppointmentDoc> {
       const doc: Omit<AppointmentDoc, "_id"> = {
         ...fields,
+        ...(clientId ? { clientId } : {}),
         status: "active",
         createdBy: by,
         updatedBy: by,
