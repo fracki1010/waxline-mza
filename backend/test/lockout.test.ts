@@ -23,114 +23,96 @@ beforeEach(async () => {
   lockout = createLockout(db);
 });
 
-async function fail(user: string, n: number, now: Date) {
-  for (let i = 0; i < n; i++) await lockout.recordFailure(user, now);
+async function attempt(user: string, n: number, now: Date) {
+  const results: boolean[] = [];
+  for (let i = 0; i < n; i++) results.push(await lockout.reserve(user, now));
+  return results;
 }
+const doc = (id: string) => db.collection("signInAttempts").findOne({ _id: id as never });
 
 describe("lockout", () => {
-  it("locks on the 5th failure, not before", async () => {
-    await fail("alice", 4, T0);
-    expect(await lockout.isLocked("alice", T0)).toBe(false);
-    await lockout.recordFailure("alice", T0);
-    expect(await lockout.isLocked("alice", T0)).toBe(true);
-    await lockout.recordFailure("alice", T0);
-    expect(await lockout.isLocked("alice", T0)).toBe(true);
-  });
-
-  it("is false for a user with no failures", async () => {
-    expect(await lockout.isLocked("nobody", T0)).toBe(false);
+  it("allows exactly 5 attempts per window and refuses the 6th", async () => {
+    expect(await attempt("alice", 7, T0)).toEqual([true, true, true, true, true, false, false]);
   });
 
   it("normalises usernames with trim and lower-case", async () => {
-    await lockout.recordFailure("Alice", T0);
-    await lockout.recordFailure(" alice ", T0);
-    await lockout.recordFailure("ALICE", T0);
-    await lockout.recordFailure("alice", T0);
-    expect(await lockout.isLocked("alice", T0)).toBe(false);
-    await lockout.recordFailure("\tAlIcE\n", T0);
-    expect(await lockout.isLocked("alice", T0)).toBe(true);
-    expect(await lockout.isLocked("  ALICE ", T0)).toBe(true);
+    const names = ["Alice", " alice ", "ALICE", "alice", "\tAlIcE\n"];
+    for (const n of names) expect(await lockout.reserve(n, T0)).toBe(true);
+    expect(await lockout.reserve("  ALICE ", T0)).toBe(false);
     expect(await db.collection("signInAttempts").countDocuments()).toBe(1);
   });
 
   it("locks a never-seen username like any other", async () => {
-    await fail("ghost-user-123", 5, T0);
-    expect(await lockout.isLocked("ghost-user-123", T0)).toBe(true);
+    await attempt("ghost-user-123", 5, T0);
+    expect(await lockout.reserve("ghost-user-123", T0)).toBe(false);
   });
 
   it("keeps users independent", async () => {
-    await fail("a", 5, T0);
-    expect(await lockout.isLocked("a", T0)).toBe(true);
-    expect(await lockout.isLocked("b", T0)).toBe(false);
-    await lockout.recordFailure("b", T0);
-    expect(await lockout.isLocked("b", T0)).toBe(false);
+    await attempt("a", 6, T0);
+    expect(await lockout.reserve("b", T0)).toBe(true);
   });
 
   it("respects the window boundary", async () => {
-    await fail("alice", 5, T0);
-    expect(await lockout.isLocked("alice", at(15 * MIN - 1000))).toBe(true);
-    expect(await lockout.isLocked("alice", at(15 * MIN - 1))).toBe(true);
-    expect(await lockout.isLocked("alice", at(15 * MIN))).toBe(false);
-    expect(await lockout.isLocked("alice", at(15 * MIN + 1000))).toBe(false);
+    await attempt("alice", 5, T0);
+    expect(await lockout.reserve("alice", at(15 * MIN - 1000))).toBe(false);
+    expect(await lockout.reserve("alice", at(15 * MIN - 1))).toBe(false);
+    expect(await lockout.reserve("alice", at(15 * MIN))).toBe(true);
   });
 
   it("uses a fixed window, not a sliding one", async () => {
-    await lockout.recordFailure("alice", T0);
-    await fail("alice", 4, at(10 * MIN));
-    expect(await lockout.isLocked("alice", at(10 * MIN))).toBe(true);
-    expect(await lockout.isLocked("alice", at(14 * MIN))).toBe(true);
-    expect(await lockout.isLocked("alice", at(15 * MIN))).toBe(false);
-    const doc = await db.collection("signInAttempts").findOne({ _id: "alice" as never });
-    expect(doc?.windowStart).toEqual(T0);
-    expect(doc?.expireAt).toEqual(at(15 * MIN));
+    await lockout.reserve("alice", T0);
+    await attempt("alice", 4, at(10 * MIN));
+    expect(await lockout.reserve("alice", at(14 * MIN))).toBe(false);
+    const d = await doc("alice");
+    expect(d?.windowStart).toEqual(T0);
+    expect(d?.expireAt).toEqual(at(15 * MIN));
+    expect(await lockout.reserve("alice", at(15 * MIN))).toBe(true);
   });
 
   it("starts a new window with count 1 after expiry", async () => {
-    await fail("alice", 5, T0);
+    await attempt("alice", 6, T0);
     const later = at(15 * MIN);
-    await lockout.recordFailure("alice", later);
-    const doc = await db.collection("signInAttempts").findOne({ _id: "alice" as never });
-    expect(doc?.count).toBe(1);
-    expect(doc?.windowStart).toEqual(later);
-    expect(doc?.expireAt).toEqual(at(30 * MIN));
-    await fail("alice", 3, at(16 * MIN));
-    expect(await lockout.isLocked("alice", at(16 * MIN))).toBe(false);
-    await lockout.recordFailure("alice", at(16 * MIN));
-    expect(await lockout.isLocked("alice", at(16 * MIN))).toBe(true);
+    expect(await lockout.reserve("alice", later)).toBe(true);
+    const d = await doc("alice");
+    expect(d?.count).toBe(1);
+    expect(d?.windowStart).toEqual(later);
+    expect(d?.expireAt).toEqual(at(30 * MIN));
+    expect(await attempt("alice", 4, at(16 * MIN))).toEqual([true, true, true, true]);
+    expect(await lockout.reserve("alice", at(16 * MIN))).toBe(false);
   });
 
   it("does not reset the window one millisecond before expiry", async () => {
-    await fail("alice", 2, T0);
-    await fail("alice", 3, at(15 * MIN - 1));
-    const doc = await db.collection("signInAttempts").findOne({ _id: "alice" as never });
-    expect(doc?.count).toBe(5);
-    expect(doc?.windowStart).toEqual(T0);
+    await attempt("alice", 2, T0);
+    await attempt("alice", 3, at(15 * MIN - 1));
+    const d = await doc("alice");
+    expect(d?.count).toBe(5);
+    expect(d?.windowStart).toEqual(T0);
   });
 
   it("clear removes the lock and the document", async () => {
-    await fail("alice", 5, T0);
+    await attempt("alice", 6, T0);
     await lockout.clear(" Alice ");
-    expect(await lockout.isLocked("alice", T0)).toBe(false);
     expect(await db.collection("signInAttempts").countDocuments()).toBe(0);
-    await fail("alice", 4, T0);
-    expect(await lockout.isLocked("alice", T0)).toBe(false);
+    expect(await attempt("alice", 5, T0)).toEqual([true, true, true, true, true]);
   });
 
   it("clear on an unknown user is a no-op", async () => {
     await expect(lockout.clear("nobody")).resolves.toBeUndefined();
   });
 
-  it("counts concurrent failures atomically", async () => {
-    await Promise.all(Array.from({ length: 10 }, () => lockout.recordFailure("alice", T0)));
-    const doc = await db.collection("signInAttempts").findOne({ _id: "alice" as never });
-    expect(doc?.count).toBe(10);
+  it("reserves atomically: 30 parallel calls give exactly 5 true", async () => {
+    const results = await Promise.all(
+      Array.from({ length: 30 }, () => lockout.reserve("alice", T0)),
+    );
+    expect(results.filter(Boolean)).toHaveLength(5);
+    expect((await doc("alice"))?.count).toBe(30);
   });
 
   it("stores only the allowed fields", async () => {
-    await lockout.recordFailure("Alice", T0);
-    const doc = await db.collection("signInAttempts").findOne({});
-    expect(Object.keys(doc ?? {}).sort()).toEqual(["_id", "count", "expireAt", "windowStart"]);
-    expect(doc?._id).toBe("alice");
+    await lockout.reserve("Alice", T0);
+    const d = await db.collection("signInAttempts").findOne({});
+    expect(Object.keys(d ?? {}).sort()).toEqual(["_id", "count", "expireAt", "windowStart"]);
+    expect(d?._id).toBe("alice");
   });
 
   it("creates the TTL index idempotently", async () => {
@@ -145,8 +127,8 @@ describe("lockout", () => {
 
 describe("lockout clock guard", () => {
   it("rejects an invalid clock instead of failing open", async () => {
-    await expect(lockout.recordFailure("a", new Date(Number.NaN))).rejects.toThrow(TypeError);
-    await expect(lockout.isLocked("a", new Date(Number.NaN))).rejects.toThrow(TypeError);
+    await expect(lockout.reserve("a", new Date(Number.NaN))).rejects.toThrow(TypeError);
+    await expect(lockout.reserve("a", "2026" as never)).rejects.toThrow(TypeError);
     expect(await db.collection("signInAttempts").countDocuments()).toBe(0);
   });
 });

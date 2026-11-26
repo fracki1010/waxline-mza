@@ -97,3 +97,14 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 
 ## T018 — 2026-11-25 (correction)
 - status: complete. Owner approved in chat; committed on main; the pre-commit hook ran and passed.
+
+## T009-T010 — 2026-11-25
+- status: built, reviewed (panel of 3, round 1 fixed), awaiting human approval of the final diff (tier 2)
+- red: stub failed 62 of 129 tests on assertions; after the panel, 11 route tests failed on assertions and 18 lockout and config tests failed on missing functions before the fixes
+- green: backend 158 tests, 7 consecutive full runs green in my own check; 100% line coverage with `server.ts` excluded (entry point, covered by T016); lint, typecheck and build clean
+- mutation: writer 62 mutants (3 equivalent survivors) plus 38 on the post-review code (1 equivalent survivor: the `doc !== null` fail-closed guard in `reserve`); tests reviewer 78 mutants, 10 survivors that became tests
+- files: backend/src/{app,config,indexes,server}.ts, middleware/*, routes/*, services/{lockout,password-input}.ts, models/staff.ts (findById), tsconfig.json (lib ES2024), vitest.config.ts, .env.example, and their tests
+- risk: tier 2 (auth class) by `rsc risk`; panel of 3 recorded (correctness, security, tests); ledger L29-L38: 8 fixed, 2 parked (L30 cap abuse accepted as plan risk 13; L38 normalisation for T011). Round 2 was NOT an independent re-review: the fixes were verified by tests, 38 mutants and my own read of the sign-in route
+- controls: tests ok, lint ok, typecheck ok, build ok, traceability ok (AC1-AC9), security scan not run (`npm audit` not executed; no new dependency)
+- open: one full-suite run failed a single test once for the writer and could not be reproduced in 32 further runs and 7 of mine; cause unidentified, probably a cold-start timeout
+- not verified: `server.ts` never started (T016 real-URL pass); Hosting forwarding of `Origin` and the cookie, and whether the `*.run.app` URL is reachable directly (ingress should be restricted in T015)

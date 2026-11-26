@@ -68,6 +68,46 @@ describe("staff model", () => {
     }
   });
 
+  it("finds a member by id without exposing the hash", async () => {
+    const created = await staff.createStaff(input, NOW);
+    const found = await staff.findById(created.id);
+    expect(found).toEqual({ id: created.id, displayName: "Maria" });
+    expect(Object.keys(found!).sort()).toEqual(["displayName", "id"]);
+    // the hash is never even loaded
+    const findOne = vi.spyOn(Collection.prototype, "findOne");
+    try {
+      await staff.findById(created.id);
+      expect(findOne.mock.calls[0]?.[1]).toEqual({ projection: { displayName: 1 } });
+    } finally {
+      findOne.mockRestore();
+    }
+  });
+
+  it("returns null for an unknown or malformed id without throwing", async () => {
+    await staff.createStaff(input, NOW);
+    const findOne = vi.spyOn(Collection.prototype, "findOne");
+    try {
+      expect(await staff.findById("0".repeat(24))).toBeNull();
+      const callsBefore = findOne.mock.calls.length;
+      for (const bad of [
+        "",
+        "abc",
+        "z".repeat(24),
+        "a".repeat(12),
+        "a".repeat(25),
+        42,
+        null,
+        undefined,
+        { $ne: null },
+      ]) {
+        expect(await staff.findById(bad as never)).toBeNull();
+      }
+      expect(findOne.mock.calls.length).toBe(callsBefore);
+    } finally {
+      findOne.mockRestore();
+    }
+  });
+
   it("lets exactly one of two concurrent creates with the same name win", async () => {
     const results = await Promise.allSettled([
       staff.createStaff(input, NOW),

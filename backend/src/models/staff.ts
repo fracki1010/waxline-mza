@@ -1,4 +1,4 @@
-import { MongoServerError, type Db } from "mongodb";
+import { MongoServerError, ObjectId, type Db } from "mongodb";
 import { assertValidNow } from "../services/clock.js";
 import { normaliseUsername } from "../services/username.js";
 
@@ -6,6 +6,7 @@ const COLLECTION = "staff";
 const MAX_USERNAME = 64;
 const MAX_DISPLAY_NAME = 100;
 const DUPLICATE_KEY = 11000;
+const OBJECT_ID = /^[0-9a-f]{24}$/i;
 
 interface Staff {
   username: string;
@@ -44,6 +45,16 @@ export function createStaffModel(db: Db) {
         displayName: doc.displayName,
         passwordHash: doc.passwordHash,
       };
+    },
+
+    async findById(id: string): Promise<{ id: string; displayName: string } | null> {
+      // `ObjectId.isValid` also accepts any 12-character string, so the format is checked explicitly.
+      if (typeof id !== "string" || !OBJECT_ID.test(id)) return null;
+      const doc = await staff.findOne(
+        { _id: new ObjectId(id) },
+        { projection: { displayName: 1 } },
+      );
+      return doc === null ? null : { id: doc._id.toHexString(), displayName: doc.displayName };
     },
 
     async createStaff(

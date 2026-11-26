@@ -21,43 +21,33 @@ export async function ensureLockoutIndexes(db: Db): Promise<void> {
 export function createLockout(db: Db) {
   const attempts = db.collection<Attempt>(COLLECTION);
 
-  async function upsertFailure(id: string, now: Date): Promise<void> {
-    // Atomic, and MongoDB retries an upsert on `_id` equality itself, so no duplicate-key handling here.
-    const expired = {
-      $or: [
-        { $eq: [{ $type: "$windowStart" }, "missing"] },
-        { $lte: [{ $add: ["$windowStart", WINDOW_MS] }, { $literal: now }] },
-      ],
-    };
-    await attempts.findOneAndUpdate(
-      { _id: id },
-      [
-        {
-          $set: {
-            count: { $cond: [expired, 1, { $add: ["$count", 1] }] },
-            windowStart: { $cond: [expired, { $literal: now }, "$windowStart"] },
-          },
-        },
-        { $set: { expireAt: { $add: ["$windowStart", WINDOW_MS] } } },
-      ],
-      { upsert: true },
-    );
-  }
-
   return {
-    async isLocked(username: string, now: Date): Promise<boolean> {
+    // The check is the write: one atomic upsert counts this attempt and says whether it may proceed,
+    // so concurrent guesses cannot all pass a stale "not locked" read. Window is fixed from the
+    // first attempt; a locked attempt keeps counting but never extends the window.
+    async reserve(username: string, now: Date): Promise<boolean> {
       assertValidNow(now);
-      const doc = await attempts.findOne({ _id: normaliseUsername(username) });
-      return (
-        doc !== null &&
-        now.getTime() < doc.windowStart.getTime() + WINDOW_MS &&
-        doc.count >= MAX_FAILURES
+      const expired = {
+        $or: [
+          { $eq: [{ $type: "$windowStart" }, "missing"] },
+          { $lte: [{ $add: ["$windowStart", WINDOW_MS] }, { $literal: now }] },
+        ],
+      };
+      // MongoDB retries an upsert on `_id` equality itself, so no duplicate-key handling here.
+      const doc = await attempts.findOneAndUpdate(
+        { _id: normaliseUsername(username) },
+        [
+          {
+            $set: {
+              count: { $cond: [expired, 1, { $add: ["$count", 1] }] },
+              windowStart: { $cond: [expired, { $literal: now }, "$windowStart"] },
+            },
+          },
+          { $set: { expireAt: { $add: ["$windowStart", WINDOW_MS] } } },
+        ],
+        { upsert: true, returnDocument: "after" },
       );
-    },
-
-    async recordFailure(username: string, now: Date): Promise<void> {
-      assertValidNow(now);
-      await upsertFailure(normaliseUsername(username), now);
+      return doc !== null && doc.count <= MAX_FAILURES;
     },
 
     async clear(username: string): Promise<void> {

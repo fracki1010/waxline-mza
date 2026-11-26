@@ -57,3 +57,9 @@ Why        — explicit dependency like `createApp`, testable with `startTestDb`
 Context   — a NaN `now` is stored by the Mongo driver as 1970, which made every session resolve as valid and a lockout never lock. The lockout review had called it a nit; the sessions review showed it is a fail-open.
 Decision   — `assertValidNow` in `services/clock.ts` throws `TypeError`; called by `sessions.create/resolve` and `lockout.isLocked/recordFailure`. `create` also rejects a `staffId` that is not a non-empty string.
 Why        — fix the bug class, not the line. Routes must treat a thrown TypeError as a 500 that denies access, never as "allow".
+
+## 2026-11-25 — Reserve the sign-in attempt before verifying it  (feature: staff-auth, task: T009-T010)
+Context   — the first route counted a failure after the argon2 check; the security review measured 8 guesses per window instead of 5 with waves of 4 concurrent requests, which breaks AC7.
+Decision   — `lockout.reserve(username, now)` increments atomically and says whether the attempt may proceed; success calls `clear`. `isLocked` and `recordFailure` were removed. The server also refuses to start without `MONGODB_URI` and `ALLOWED_ORIGINS`, and `TRUST_PROXY` was dropped.
+Why        — the check must be the write, otherwise concurrency defeats the limit. Fail loudly at startup instead of serving 403 on every browser POST.
+Accepted   — anonymous traffic can fill the cap of 4 verifications (plan risk 13); unauthenticated unknown `/api/**` paths answer 401, not 404, so the route list is not revealed.
