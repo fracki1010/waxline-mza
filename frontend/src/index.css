@@ -16,11 +16,24 @@ label {
   display: grid;
   gap: 0.25rem;
 }
+h1 {
+  overflow-wrap: anywhere;
+}
 input,
 button {
   min-height: 44px;
   font: inherit;
   padding: 0 0.75rem;
+}
+input {
+  width: 100%;
+  box-sizing: border-box;
+}
+/* Pending: #4b5563 on #e5e7eb is 6.10:1 (>= 4.5:1). */
+button[aria-disabled="true"] {
+  color: #4b5563;
+  background: #e5e7eb;
+  cursor: progress;
 }
 input:focus-visible,
 button:focus-visible {
@@ -29,4 +42,15 @@ button:focus-visible {
 }
 [role="alert"] {
   color: #b00020;
+}
+/* Empty but still rendered (not display: none) so screen readers keep the live region. */
+.banner:empty {
+  margin: 0;
+  padding: 0;
+}
+.banner {
+  margin: 0 0 1rem;
+  padding: 0.5rem 0.75rem;
+  background: #fff4cc;
+  color: #4a3b00;
 }

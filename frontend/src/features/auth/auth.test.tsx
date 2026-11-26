@@ -96,7 +96,7 @@ describe("session guard", () => {
     expect(screen.getByRole("status")).toBeInTheDocument();
     await g.release(NO_SESSION());
     await expectSignIn();
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.queryByText(messages.loading)).not.toBeInTheDocument();
   });
 
   it("shows sign-in on 401 without a session-lost message (AC4)", async () => {
@@ -364,7 +364,10 @@ describe("sign-in", () => {
       fireEvent.submit(form);
     });
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: messages.signInButton })).toBeDisabled(),
+      expect(screen.getByRole("button", { name: messages.signingIn })).toHaveAttribute(
+        "aria-disabled",
+        "true",
+      ),
     );
     fireEvent.submit(form);
     await tick();

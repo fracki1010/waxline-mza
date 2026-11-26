@@ -27,7 +27,13 @@ export function createQueryClient(): QueryClient {
       onError: (e) => e instanceof SessionLostError && void endSession(client),
     }),
     // gcTime 0 drops mutation variables (the password) as soon as nothing observes them.
-    defaultOptions: { queries: { retry: false }, mutations: { gcTime: 0, retry: false } },
+    // networkMode "always": the default would pause a mutation while the browser reports offline,
+    // so sign-in would spin forever and sign-out would never wipe local state. Failures surface
+    // as NetworkError instead.
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { gcTime: 0, retry: false, networkMode: "always" },
+    },
   });
   return client;
 }

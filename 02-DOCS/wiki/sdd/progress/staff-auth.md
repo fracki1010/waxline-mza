@@ -149,3 +149,14 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 
 ## T013-T014 — 2026-11-25 (correction)
 - status: complete. Owner approved in chat; committed on main; the pre-commit hook ran and passed.
+
+## T019 — 2026-11-26
+- status: built, reviewed (panel of 3, round 1 fixed), awaiting human approval of the final diff (`rsc risk` gave tier 2: the files are in the auth class, the plan expected 1)
+- red: new tests failed before the implementation (7 offline and banner failures plus 3 stylesheet checks in a focused run; after the first pass 3 still failed and exposed the same-tick sign-out bug)
+- green: frontend 143 tests, 5 consecutive full runs green in my own check; 100% lines (99.5% statements, 99.2% branches); lint, typecheck and build clean; `npm audit` (dev included) 0 vulnerabilities
+- dependency: `axe-core` 4.14.0 pinned exactly, dev only (writer reports published 2026-10-05; not checked by me)
+- mutation: 18 hand mutants on the new logic, 17 killed, 1 equivalent survivor (`setRecovered(!offline)` vs `true`)
+- files: frontend/src/features/auth/{OfflineBanner,RequireStaff,SignIn,a11y.test,auth.test}.tsx, features/home/Home.tsx, shared/{useScreenFocus,queryClient,messages}.ts, index.css, package.json, package-lock.json
+- risk: tier 2; panel of 3 (auth regression, accessibility and offline UX, tests), read-only: 0 blockers. Fixed: banner shown on any error (now offline or `NetworkError` only), focus lost on the first-load error screen and stolen by the loading screen on cold start, no pending state for `aria-disabled` buttons, a CSS check that passed on `outline: none`, axe never shown able to fail, missing states and landmark checks, test cleanup. Two real bugs found by red tests: mutations paused while offline, and a double click on Salir sending two sign-outs. Parked: single announcement for alert plus focus move, automatic sign-out retry, `h1:focus`, forced-colors and dark mode. Round 2 was NOT an independent re-review: verified by tests, 18 mutants and my own runs
+- controls: tests ok, lint ok, typecheck ok, build ok, a11y ok in jsdom (zero axe violations except `color-contrast`, disabled), traceability ok (constitution 19 and 20), audit ok
+- not verified: real screen reader, measured contrast, real devices and browsers (44 px targets, focus ring, iOS keyboard, real offline events); real cold start offline outside jsdom
