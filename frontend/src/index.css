@@ -1,22 +1,51 @@
-/* Tokens. Contrast on white: --ink 17:1, --muted 7.6:1, --line 4.8:1 (WCAG 1.4.11 needs 3:1 for control borders). */
+/* Material Design 3 (CSS-only path). Light scheme generated from seed #1a56db with
+   @material/material-color-utilities; tonal surfaces replace shadows as the depth cue.
+   Contrast: on-primary #ffffff on primary #1353d8 >= 4.5:1; outline #767680 on white >= 3:1 (WCAG 1.4.11). */
 :root {
-  --ink: #0f172a;
-  --muted: #475569;
-  --line: #64748b;
-  --line-soft: #e2e8f0;
-  --subtle: #f1f5f9;
-  --accent: #1a56db;
-  --danger: #b00020;
-  --radius: 10px;
-  --shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --md-sys-color-primary: #1353d8;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #dbe1ff;
+  --md-sys-color-on-primary-container: #00174d;
+  --md-sys-color-secondary-container: #dde1f9;
+  --md-sys-color-on-secondary-container: #161b2c;
+  --md-sys-color-error: #ba1a1a;
+  --md-sys-color-error-container: #ffdad6;
+  --md-sys-color-on-error-container: #410002;
+  --md-sys-color-surface: #fefbff;
+  --md-sys-color-on-surface: #1b1b1f;
+  --md-sys-color-on-surface-variant: #45464f;
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: #f5f3f7;
+  --md-sys-color-surface-container: #efedf1;
+  --md-sys-color-surface-container-high: #eae7ec;
+  --md-sys-color-outline: #767680;
+  --md-sys-color-outline-variant: #c6c6d0;
+
+  --md-sys-shape-corner-small: 8px;
+  --md-sys-shape-corner-medium: 12px;
+  --md-sys-shape-corner-large: 16px;
+  --md-sys-shape-corner-extra-large: 28px;
+  --md-sys-shape-corner-full: 9999px;
+
+  --md-sys-elevation-1: 0 1px 2px rgba(27, 27, 31, 0.12);
+
+  /* Legacy names kept as aliases so every component reads the same scheme. */
+  --ink: var(--md-sys-color-on-surface);
+  --muted: var(--md-sys-color-on-surface-variant);
+  --line: var(--md-sys-color-outline);
+  --line-soft: var(--md-sys-color-outline-variant);
+  --subtle: var(--md-sys-color-surface-container);
+  --accent: var(--md-sys-color-primary);
+  --danger: var(--md-sys-color-error);
+  --radius: var(--md-sys-shape-corner-small);
 }
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
+  font-family: "Roboto Flex", Roboto, system-ui, sans-serif;
   font-size: 1rem;
   line-height: 1.5;
-  color: var(--ink);
-  background: #ffffff;
+  color: var(--md-sys-color-on-surface);
+  background: var(--md-sys-color-surface);
   -webkit-text-size-adjust: 100%;
 }
 .screen {
@@ -25,11 +54,12 @@ body {
   margin: 0 auto;
   padding: 1rem;
 }
+/* Display/headline scale: tight tracking on large titles, emphasised weight. */
 h1 {
-  font-size: 1.75rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  font-size: 2rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 2.5rem;
   margin: 0.5rem 0 1.25rem;
   overflow-wrap: anywhere;
 }
@@ -45,16 +75,21 @@ fieldset {
   padding: 0;
   border: 0;
 }
+/* Label role: small, medium weight, on-surface-variant. */
 legend {
   padding: 0;
   margin-bottom: 0.25rem;
-  color: var(--muted);
+  color: var(--md-sys-color-on-surface-variant);
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 500;
+  letter-spacing: 0.01em;
 }
 label {
   display: grid;
   gap: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface-variant);
 }
 ul {
   display: grid;
@@ -63,38 +98,49 @@ ul {
   margin: 0;
   padding: 0;
 }
+/* Cards: medium corner (12dp), tonal surface instead of border and shadow. */
 .appt {
   display: grid;
   gap: 0.25rem;
-  padding: 0.875rem;
-  background: #ffffff;
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  padding: 1rem;
+  background: var(--md-sys-color-surface-container-low);
+  border-radius: var(--md-sys-shape-corner-medium);
 }
-/* Home: two large tiles for the main areas, sign-out kept apart as a secondary action. */
+/* Home: large tonal tiles for the main areas; sign-out kept apart as a text action. */
 .home-nav {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
 }
 .home-nav button {
-  min-height: 88px;
+  min-height: 96px;
   font-size: 1.0625rem;
-  font-weight: 600;
+  font-weight: 500;
   text-align: left;
   align-items: flex-start;
+  background: var(--md-sys-color-surface-container-high);
+  border-color: transparent;
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  color: var(--md-sys-color-on-surface);
 }
 .signout {
   margin-top: 2rem;
+  background: transparent;
+  border-color: transparent;
+  color: var(--md-sys-color-primary);
+  font-weight: 500;
 }
 .back-link {
   margin-bottom: 0.5rem;
+  background: transparent;
+  border-color: transparent;
+  color: var(--md-sys-color-primary);
   font-weight: 500;
 }
 .appt-time {
-  font-weight: 600;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
+  color: var(--md-sys-color-on-surface);
 }
 .appt-actions {
   display: flex;
@@ -105,7 +151,7 @@ ul {
 .appt-cancelled {
   color: var(--muted);
 }
-/* Cancelling is the destructive action on a row: same size, danger text, never the primary. */
+/* Cancelling is the destructive action on a row: same size, error text, never the primary. */
 .appt-actions button:last-child {
   color: var(--danger);
 }
@@ -120,9 +166,10 @@ ul {
   grid-column: 1 / -1;
 }
 ::selection {
-  background: #bfd3fb;
-  color: var(--ink);
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
 }
+/* Filled-tonal-style full-width action: the main action of a list screen. */
 .day-new {
   width: 100%;
   margin: 0 0 1rem;
@@ -149,23 +196,31 @@ ul {
   padding: 0;
   color: var(--muted);
 }
+/* Select keeps the same 44px target as inputs and buttons. */
 select {
   min-height: 44px;
   font: inherit;
 }
+/* Controls: 44px targets. Literal values below are checked by the stylesheet test. */
 input,
 button {
   min-height: 44px;
   font: inherit;
-  padding: 0 0.75rem;
+  padding: 0 1.25rem;
 }
 input,
 select,
 button {
   border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: #ffffff;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-surface-container-lowest);
   color: var(--ink);
+}
+/* Text fields use the small corner (8dp), not the pill used by buttons. */
+input,
+select {
+  border-radius: var(--md-sys-shape-corner-small);
+  padding: 0 0.75rem;
 }
 input {
   width: 100%;
@@ -177,24 +232,25 @@ button {
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
+  font-weight: 500;
   transition:
     transform 120ms ease-out,
     background-color 120ms ease-out;
 }
-/* Primary action: the one a person is expected to press on the screen. */
+/* Primary action (filled): the one a person is expected to press on the screen. */
 button[type="submit"]:not([aria-disabled="true"]),
 .day-new {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #ffffff;
-  font-weight: 600;
+  background: var(--md-sys-color-primary);
+  border-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  font-weight: 500;
 }
 button:active:not(:disabled) {
   transform: scale(0.97);
 }
 @media (hover: hover) and (pointer: fine) {
   button:hover:not(:disabled):not([aria-disabled="true"]) {
-    background: var(--subtle);
+    background: var(--md-sys-color-surface-container-high);
   }
   button[type="submit"]:not([aria-disabled="true"]):hover:not(:disabled),
   .day-new:hover {
@@ -211,13 +267,14 @@ button[aria-disabled="true"] {
   background: #e5e7eb;
   cursor: progress;
 }
+/* Focus ring: primary tone, 3px, offset so it clears the control edge. */
 input:focus-visible,
 button:focus-visible {
-  outline: 3px solid #1a56db;
+  outline: 3px solid #1353d8;
   outline-offset: 2px;
 }
 select:focus-visible {
-  outline: 3px solid #1a56db;
+  outline: 3px solid #1353d8;
   outline-offset: 2px;
 }
 [role="alert"] {
@@ -230,10 +287,10 @@ select:focus-visible {
 }
 .banner {
   margin: 0 0 1rem;
-  padding: 0.5rem 0.75rem;
-  background: #fff4cc;
-  color: #4a3b00;
-  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  border-radius: var(--md-sys-shape-corner-small);
 }
 @media (prefers-reduced-motion: reduce) {
   button {
