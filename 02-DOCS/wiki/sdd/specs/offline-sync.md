@@ -7,12 +7,12 @@ timestamp: 2026-11-26T00:00:00Z
 topic: sdd
 slug: offline-sync
 branch: main
-status: draft
+status: approved
 ---
 
 # Spec — Offline work with sync for the PWA
 
-> Slug: `offline-sync` · Status: draft, waiting for owner approval · Created: 2026-11-26
+> Slug: `offline-sync` · Status: approved by owner 2026-11-26 with defaults D1 and D2 · Created: 2026-11-26
 > Inherits: [constitution](../constitution.md) · Depends on: [sales-and-stock](sales-and-stock.md), [appointments](appointments.md), [staff-auth](staff-auth.md)
 
 ## Problem & why
