@@ -9,6 +9,7 @@ export const FIXED_SLOT_STARTS = [
   "15:00",
   "16:00",
   "17:00",
+  "18:00",
 ];
 
 // A time-of-day string as "HH:MM" plus one hour, for the slot picker's default end.

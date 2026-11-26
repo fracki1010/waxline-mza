@@ -8,7 +8,7 @@ Stage: deployed to production 2026-11-26 (owner approved). Accessibility (axe) c
 - Commits: `f7c161d` (appointments), `a9a4e58` (services), `0149593` (staff list), `8869833` and `d751577` (frontend).
 
 ## Assumptions to confirm
-- Fixed slots start at 09:00 through 17:00, one hour each. The spec example said "9 to 18"; confirm whether 18:00 is also a start.
+- Decided by owner: fixed slots start at 09:00 through 18:00, one hour each (18:00 added in the frontend `slots.ts`; not yet deployed).
 - An edit may keep a deactivated service when only the time changes.
 - The day is computed in the device's time zone; the API takes instants.
 - The same-day rule (A2) is enforced in the form only.
