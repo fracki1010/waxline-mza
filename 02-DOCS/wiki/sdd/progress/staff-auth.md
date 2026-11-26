@@ -120,3 +120,6 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 - risk: one fresh reviewer (risk lens): 0 blockers, 3 should-fix, several nits. Fixed: single readline with `historySize: 0`, Ctrl-C and Ctrl-D end with "Cancelled" and exit 1 (observed in a pty). Not fixed: CLI has no automated test (checked by hand in a pty: success exit 0, mismatch exit 1, short password exit 1, non-TTY exit 1, Ctrl-C and Ctrl-D exit 1, secret never in output); npm script rebuilds the backend and needs `tsc` (decision for T015). Round 2 was NOT an independent re-review
 - controls: tests ok, lint ok, typecheck ok, build ok, traceability ok (AC1 enabler), npm arg forwarding checked by me, security scan not run (`npm audit` not executed; no new dependency)
 - not verified: Windows; a real terminal emulator beyond the pty; the script against Atlas
+
+## T011 — 2026-11-25 (correction)
+- status: complete. Owner approved in chat; committed on main; the pre-commit hook ran and passed.
