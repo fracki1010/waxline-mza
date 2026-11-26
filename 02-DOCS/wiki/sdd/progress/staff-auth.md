@@ -108,3 +108,6 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 - controls: tests ok, lint ok, typecheck ok, build ok, traceability ok (AC1-AC9), security scan not run (`npm audit` not executed; no new dependency)
 - open: one full-suite run failed a single test once for the writer and could not be reproduced in 32 further runs and 7 of mine; cause unidentified, probably a cold-start timeout
 - not verified: `server.ts` never started (T016 real-URL pass); Hosting forwarding of `Origin` and the cookie, and whether the `*.run.app` URL is reachable directly (ingress should be restricted in T015)
+
+## T009-T010 — 2026-11-25 (correction)
+- status: complete. Owner approved in chat; committed on main (a01c769); the pre-commit hook ran and passed.
