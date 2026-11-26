@@ -7,12 +7,12 @@ timestamp: 2026-11-26T00:00:00Z
 topic: sdd
 slug: appointments
 branch: main
-status: drafted
+status: approved
 ---
 
 # Spec — Appointments
 
-> Slug: `appointments` · Status: drafted from owner answers, awaiting approval · Created: 2026-11-26
+> Slug: `appointments` · Status: approved by owner 2026-11-26, A1–A4 confirmed · Created: 2026-11-26
 > Inherits: [constitution](../constitution.md) · Depends on: [staff-auth](staff-auth.md)
 
 ## Problem & why
@@ -76,11 +76,11 @@ Each appointment holds:
 - AC8: The day's list shows only that day's appointments, ordered by start time.
 - AC9: All appointment actions require a signed-in staff session; without one the API refuses with the standard error shape.
 
-## Assumptions (owner did not state these; confirm before planning)
+## Assumptions (confirmed by owner 2026-11-26)
 - A1: Cancelled appointments are kept with a status, not deleted.
 - A2: Custom times must still fall on the same day as the list they appear in.
 - A3: The service list is maintained by staff in the app; its content is not part of this spec.
 - A4: Times are in the car wash's local time zone.
 
 ## Open questions
-- None blocking the plan. A1–A4 are to be confirmed by the owner during approval.
+- None blocking the plan.
