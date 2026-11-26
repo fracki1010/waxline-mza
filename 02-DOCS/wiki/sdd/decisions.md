@@ -94,8 +94,8 @@ Decision   — `backend/Dockerfile` (node:24-slim, multi-stage, runs as `node`, 
 Why        — one script keeps flags and their why-comments together; secrets are injected at run time and never stored in the image or the repo.
 Accepted   — `backend/package-lock.json` was regenerated with npm 11.19.1 because the image's npm rejected the committed lock (two optional beta entries and `peer` flags; no version changed); the Hosting origin `https://waxline-mza.web.app` is a placeholder to confirm; the script is untested against gcloud; the rewrite is unexercised on a live URL (T016); Atlas and the secret do not exist yet.
 
-## 2026-11-26 — Owner confirms Cloud Run minimum instances 0 and the Hosting origin  (feature: staff-auth, after T017)
-Context   — two open choices from T015 and T016: cold starts against cost, and the Hosting origin allowed in `ALLOWED_ORIGINS`.
-Decision   — minimum instances stay at 0 (first sign-in after idle is slow; staff use is light). `ALLOWED_ORIGINS` stays `https://waxline-mza.web.app`. Both are set in `deploy/deploy-api.sh`.
-Why        — the owner accepts a slow first request in exchange for not paying for an idle instance; the current origin is the one that works.
-Accepted   — Atlas network access stays open to all addresses (plan risk 3), and the owner has not recorded a fixed egress option.
+## 2026-11-26 — Owner keeps Cloud Run minimum instances 0 and the Hosting origin  (feature: staff-auth)
+Context   — two items left open in the T015 and T016 ledger: min-instances (cost against cold start) and the Hosting origin in `ALLOWED_ORIGINS`.
+Decision   — min-instances stays 0, and `ALLOWED_ORIGINS` stays `https://waxline-mza.web.app`. Both values are the defaults in `deploy/deploy-api.sh`.
+Why        — the owner answered "bien vamos con eso" and then "si" to the proposed values. The reasons were not stated in the chat.
+Accepted   — Atlas network access stays at 0.0.0.0/0 (plan risk 3). A fixed egress is still an open option for later.
