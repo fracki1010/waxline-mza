@@ -7,3 +7,8 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </StrictMode>,
 );
+
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  // Registration failure must never break the app.
+  navigator.serviceWorker.register("/sw.js").catch(() => {});
+}

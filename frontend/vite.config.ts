@@ -1,8 +1,10 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
+import { swInjectPlugin } from "./swInject";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), swInjectPlugin()],
+  server: { proxy: { "/api": "http://localhost:8080" } },
   test: {
     allowOnly: false,
     environment: "jsdom",

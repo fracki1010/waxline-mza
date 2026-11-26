@@ -123,3 +123,12 @@ Stage: T001 spike done (owner-reported pass on iPhone), next: T002 repo foundati
 
 ## T011 — 2026-11-25 (correction)
 - status: complete. Owner approved in chat; committed on main; the pre-commit hook ran and passed.
+
+## T012 — 2026-11-25
+- status: built, reviewed, awaiting owner approval (tier 1 by `rsc risk`)
+- red: tests written first; red shown by hiding the implementation (api and messages missing, sw.js missing); green: frontend 52 tests, 3 consecutive full runs green, 100% lines and branches; lint, typecheck and build clean; `dist/` has manifest, `sw.js` with injected cache name and precache list, icons
+- mutation: 11 hand mutants on the worker and `apiFetch`, all killed (api guard, regex, method guard, ok/basic/html checks, fallback, 401, `..`, `no-store`, `clients.claim`)
+- files: frontend/{index.html,vite.config.ts,swInject.ts}, frontend/public/{sw.js,manifest.webmanifest,icons/*}, frontend/src/{main.tsx,pwa.test.ts,swInject.test.ts}, frontend/src/shared/{api,messages,api.test}.ts
+- risk: tier 1. One fresh reviewer: 0 blockers, 5 should-fix. Fixed: HTML cached as a hashed asset, offline shell without assets and a never-changing cache name (now build-injected), `/index.html` redirect risk (precache `/` only), weak worker tests (offline fallback, install, activate, never-cache-a-navigation), `apiFetch` hardening (`..`, backslash, `no-store`, JSON type only for strings). Plan interface updated to the real `apiFetch` signature and to the `/me` 401 handling T014 needs. Round 2 was NOT an independent re-review: verified by tests, 11 mutants and my own run
+- controls: tests ok, lint ok, typecheck ok, build ok, traceability ok (AC5 and constitution 20 enabler), security scan not run (`npm audit` not executed; no new dependency)
+- not verified: real browser install, offline launch and update flow, and Hosting `cleanUrls` behaviour (T016 on the real URL); the dev proxy against a running backend; iOS
