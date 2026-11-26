@@ -18,6 +18,18 @@ export type NewEntry = Omit<OutboxEntry, "status" | "createdAt">;
 const store = createStore("waxline", "outbox");
 const KEY = "entries";
 
+// Listeners run after each stored change so screens can show pending and rejected entries live.
+const listeners = new Set<() => void>();
+export function subscribeOutbox(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+function changed(): void {
+  listeners.forEach((listener) => listener());
+}
+
 // Every read-modify-write goes through one queue, so two writers cannot overwrite each other's change.
 let chain: Promise<unknown> = Promise.resolve();
 function locked<T>(task: () => Promise<T>): Promise<T> {
@@ -42,6 +54,7 @@ export const outbox = {
     locked(async () => {
       const current = await load();
       await set(KEY, [...current, { ...entry, status: "pending", createdAt: Date.now() }], store);
+      changed();
     }),
 
   remove: (clientId: string) =>
@@ -52,6 +65,7 @@ export const outbox = {
         current.filter((e) => e.clientId !== clientId),
         store,
       );
+      changed();
     }),
 
   reject: (clientId: string, code: string, message: string) =>
@@ -66,5 +80,6 @@ export const outbox = {
         ),
         store,
       );
+      changed();
     }),
 };

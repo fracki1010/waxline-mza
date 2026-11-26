@@ -4,7 +4,8 @@ import { useScreenFocus } from "../../shared/useScreenFocus";
 import { useStaff } from "../services/services";
 import { AppointmentForm } from "./AppointmentForm";
 import { useAppointments, useCancelAppointment, type Appointment } from "./appointments";
-import { todayLocal } from "./slots";
+import { dayRange, todayLocal } from "./slots";
+import { useOutbox } from "../../shared/useOutbox";
 
 // 24-hour clock, matching the time inputs and the fixed slot list.
 const time = (iso: string) =>
@@ -30,6 +31,13 @@ export function DayView() {
   const appointments = useAppointments(day);
   const staff = useStaff();
   const cancel = useCancelAppointment();
+  // Appointments created offline on this day, shown until the server accepts them.
+  const queued = useOutbox().filter((entry) => {
+    if (entry.path !== "/api/appointments") return false;
+    const { from, to } = dayRange(day);
+    const at = new Date(String(entry.body.start)).getTime();
+    return at >= from.getTime() && at < to.getTime();
+  });
   const employeeName = (id: string) =>
     staff.data?.find((member) => member.id === id)?.displayName ?? "";
 
@@ -66,6 +74,23 @@ export function DayView() {
       {appointments.data?.length === 0 && <p>{messages.emptyDay}</p>}
       {cancel.isError && <p role="alert">{messages.genericError}</p>}
       <ul>
+        {queued.map((entry) => (
+          <li
+            key={entry.clientId}
+            className={entry.status === "rejected" ? "appt appt-rejected" : "appt appt-pending"}
+          >
+            <span className="appt-time">
+              {time(String(entry.body.start))}–{time(String(entry.body.end))}
+            </span>
+            <span className="appt-detail">
+              {entry.label}: {String(entry.body.customerName)} · {String(entry.body.plate)}{" "}
+              {String(entry.body.model)}{" "}
+              <span>
+                ({entry.status === "rejected" ? messages.queueRejected : messages.queuePending})
+              </span>
+            </span>
+          </li>
+        ))}
         {appointments.data?.map((item) => (
           <li
             key={item.id}

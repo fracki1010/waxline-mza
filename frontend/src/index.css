@@ -297,3 +297,34 @@ select:focus-visible {
     transition: none;
   }
 }
+
+/* Queued changes: dashed outline marks "not on the server yet"; a refused one uses the error colour. */
+.appt-pending {
+  outline: 2px dashed var(--md-sys-color-outline);
+  outline-offset: -2px;
+}
+.appt-rejected {
+  outline: 2px solid var(--md-sys-color-error);
+  outline-offset: -2px;
+  color: var(--md-sys-color-error);
+}
+.sync-status {
+  color: var(--muted);
+  margin: 0.25rem 0 0.75rem;
+}
+.queue-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.queue-item {
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem;
+  background: var(--md-sys-color-surface-container-low);
+  border-radius: var(--md-sys-shape-corner-medium);
+}
+.queue-rejected .queue-state {
+  color: var(--md-sys-color-error);
+}

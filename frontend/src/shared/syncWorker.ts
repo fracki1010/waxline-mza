@@ -1,6 +1,7 @@
 import { apiFetch, NetworkError, SessionLostError } from "./api";
 import { refusalOf } from "./apiRefusal";
 import { outbox, type OutboxEntry } from "./outbox";
+import { markSynced } from "./syncStatus";
 
 export type FlushResult = "done" | "offline" | "session-lost";
 type EntryResult = "sent" | "refused" | "offline" | "session-lost";
@@ -67,6 +68,7 @@ export function startSyncWorker(onSynced: () => void = () => {}): () => void {
     const result = await flushOutbox();
     if (result === "done") {
       attempt = 0;
+      markSynced();
       onSynced();
       return;
     }

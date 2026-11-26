@@ -6,10 +6,13 @@ import { ServiceList } from "../services/ServiceList";
 import { ProductList } from "../products/ProductList";
 import { CustomerList } from "../customers/CustomerList";
 import { SalesScreen } from "../sales/SalesScreen";
+import { OutboxScreen } from "../queue/OutboxScreen";
+import { SyncStatus } from "../queue/SyncStatus";
+import { useOutbox } from "../../shared/useOutbox";
 import { messages } from "../../shared/messages";
 import { useScreenFocus } from "../../shared/useScreenFocus";
 
-type View = "home" | "agenda" | "services" | "products" | "customers" | "sales";
+type View = "home" | "agenda" | "services" | "products" | "customers" | "sales" | "queue";
 
 const SCREENS: Record<Exclude<View, "home">, ComponentType> = {
   agenda: DayView,
@@ -17,6 +20,7 @@ const SCREENS: Record<Exclude<View, "home">, ComponentType> = {
   products: ProductList,
   customers: CustomerList,
   sales: SalesScreen,
+  queue: OutboxScreen,
 };
 
 export function Home() {
@@ -25,6 +29,7 @@ export function Home() {
   const heading = useScreenFocus();
   const busy = useRef(false); // same-tick guard: isPending only updates after a render
   const [view, setView] = useState<View>("home");
+  const queued = useOutbox().length;
 
   if (view !== "home") {
     const Screen = SCREENS[view];
@@ -45,6 +50,7 @@ export function Home() {
         {messages.welcome(data?.displayName ?? "")}
       </h1>
       <OfflineBanner />
+      <SyncStatus />
       <nav className="home-nav">
         <button type="button" onClick={() => setView("agenda")}>
           {messages.agendaButton}
@@ -60,6 +66,9 @@ export function Home() {
         </button>
         <button type="button" onClick={() => setView("sales")}>
           {messages.salesButton}
+        </button>
+        <button type="button" onClick={() => setView("queue")}>
+          {queued > 0 ? `${messages.queueButton} (${queued})` : messages.queueButton}
         </button>
       </nav>
       <button
