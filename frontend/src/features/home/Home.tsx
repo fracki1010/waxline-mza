@@ -40,7 +40,7 @@ export function Home() {
   const busy = useRef(false); // same-tick guard: isPending only updates after a render
   const [view, setView] = useState<View>("home");
   const outboxEntries = useOutbox();
-  const queued = outboxEntries.length;
+  const queued = outboxEntries.filter((e) => e.status === "pending").length;
   const refused = outboxEntries.some((e) => e.status === "rejected");
 
   if (view !== "home") {
@@ -82,7 +82,7 @@ export function Home() {
         </button>
         <button
           type="button"
-          className={queued > 0 ? (refused ? "queue-refused" : "queue-waiting") : undefined}
+          className={refused ? "queue-refused" : queued > 0 ? "queue-waiting" : undefined}
           onClick={() => setView("queue")}
         >
           {queued > 0 ? `${messages.queueButton} (${queued})` : messages.queueButton}
