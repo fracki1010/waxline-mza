@@ -132,6 +132,14 @@ export function ProductList() {
       <h1 ref={heading} tabIndex={-1}>
         {messages.productsTitle}
       </h1>
+      {products.isPending && <p role="status">{messages.loading}</p>}
+      {products.isError && <p role="alert">{messages.genericError}</p>}
+      {products.data?.length === 0 && <p>{messages.productsEmpty}</p>}
+      <ul>
+        {products.data?.map((product) => (
+          <ProductRow key={product.id} product={product} />
+        ))}
+      </ul>
       <form className="form" onSubmit={submit} aria-label={messages.addProduct}>
         <label>
           {messages.productNameLabel}
@@ -171,14 +179,6 @@ export function ProductList() {
           </button>
         </div>
       </form>
-      {products.isPending && <p role="status">{messages.loading}</p>}
-      {products.isError && <p role="alert">{messages.genericError}</p>}
-      {products.data?.length === 0 && <p>{messages.productsEmpty}</p>}
-      <ul>
-        {products.data?.map((product) => (
-          <ProductRow key={product.id} product={product} />
-        ))}
-      </ul>
     </section>
   );
 }
