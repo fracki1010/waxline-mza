@@ -37,5 +37,11 @@ export function createQueryClient(): QueryClient {
       mutations: { gcTime: 0, retry: false, networkMode: "always" },
     },
   });
+  // While signed out, a mounted observer can re-register its query during the render that follows
+  // sign-out. Such a stray is removed as soon as it appears, so it is never cached or persisted.
+  client.getQueryCache().subscribe((event) => {
+    if (event.type !== "added" || event.query.queryKey[0] === SESSION_KEY[0]) return;
+    if (client.getQueryData(SESSION_KEY) === null) client.getQueryCache().remove(event.query);
+  });
   return client;
 }

@@ -2,6 +2,8 @@ import { useRef, useState, type ComponentType } from "react";
 import { OfflineBanner } from "../auth/OfflineBanner";
 import { useSession, useSignOut } from "../auth/session";
 import { DayView } from "../appointments/DayView";
+import { useAppointments } from "../appointments/appointments";
+import { todayLocal } from "../appointments/slots";
 import { ServiceList } from "../services/ServiceList";
 import { ProductList } from "../products/ProductList";
 import { CustomerList } from "../customers/CustomerList";
@@ -22,6 +24,14 @@ const SCREENS: Record<Exclude<View, "home">, ComponentType> = {
   sales: SalesScreen,
   queue: OutboxScreen,
 };
+
+// Today's active appointments; shows nothing until the agenda data is known.
+function TodaySummary() {
+  const today = useAppointments(todayLocal());
+  if (!today.data) return null;
+  const active = today.data.filter((a) => a.status === "active").length;
+  return <p className="sync-status">{messages.todayCount(String(active))}</p>;
+}
 
 export function Home() {
   const { data } = useSession();
@@ -50,6 +60,7 @@ export function Home() {
         {messages.welcome(data?.displayName ?? "")}
       </h1>
       <OfflineBanner />
+      <TodaySummary />
       <SyncStatus />
       <nav className="home-nav">
         <button type="button" onClick={() => setView("agenda")}>

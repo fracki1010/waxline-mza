@@ -45,7 +45,10 @@ beforeEach(() => {
   vi.stubGlobal("fetch", async (path: string, init?: RequestInit) => {
     const key = `${init?.method ?? "GET"} ${path}`;
     calls.push(key);
-    const handler = routes[key];
+    // Home loads today's agenda; an empty day is the default answer for it.
+    const handler =
+      routes[key] ??
+      (path.startsWith("/api/appointments?") ? () => json(200, { appointments: [] }) : undefined);
     if (!handler) return Promise.reject(new Error(`unrouted ${key}`));
     return handler({ body: typeof init?.body === "string" ? JSON.parse(init.body) : undefined });
   });

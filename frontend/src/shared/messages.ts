@@ -36,6 +36,7 @@ export const messages = {
   queueCount: (count: string) =>
     count === "1" ? "1 cambio pendiente" : `${count} cambios pendientes`,
   lastUpdated: (time: string) => `Actualizado a las ${time}`,
+  todayCount: (count: string) => (count === "1" ? "Hoy: 1 cita" : `Hoy: ${count} citas`),
   notUpdatedYet: "Sin datos del servidor todavía.",
   backOnline: "Conexión restablecida.",
   loading: "Cargando…",
