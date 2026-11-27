@@ -25,6 +25,7 @@ export const messages = {
   outboxVehicle: "Vehículo",
   outboxSale: "Venta",
   queueButton: "Pendientes",
+  queueRefusedTile: "revisar un cambio no aceptado",
   queueTitle: "Cambios pendientes",
   queueEmpty: "No hay cambios pendientes.",
   queuePending: "Pendiente de envío",

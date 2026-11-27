@@ -108,7 +108,13 @@ export function Home() {
           <HomeRow label={messages.customersButton} onClick={() => setView("customers")} />
           <HomeRow label={messages.salesButton} onClick={() => setView("sales")} />
           <HomeRow
-            label={queued > 0 ? `${messages.queueButton} (${queued})` : messages.queueButton}
+            label={
+              refused
+                ? `${messages.queueButton}: ${messages.queueRefusedTile}`
+                : queued > 0
+                  ? `${messages.queueButton} (${queued})`
+                  : messages.queueButton
+            }
             className={refused ? "queue-refused" : queued > 0 ? "queue-waiting" : undefined}
             onClick={() => setView("queue")}
           />

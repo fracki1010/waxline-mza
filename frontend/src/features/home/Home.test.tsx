@@ -91,5 +91,7 @@ describe("Home", () => {
       await outbox.reject("a", "VALIDATION_ERROR", "Nombre inválido.");
     });
     await waitFor(() => expect(tile()).toHaveClass("queue-refused"));
+    // The colour alone is not enough: the refusal must also be said in the text.
+    expect(tile()).toHaveTextContent("revisar un cambio no aceptado");
   });
 });
