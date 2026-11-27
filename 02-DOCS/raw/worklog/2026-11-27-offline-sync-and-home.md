@@ -32,5 +32,5 @@ Staff can keep working when the link drops, without losing or duplicating writes
 - Check the redesign on a real phone.
 - Clients and services lists do not show pending state yet.
 - Appointment edit offline stays blocked until the client holds the revision.
-- Real-phone check, dark theme, and `ALLOWED_ORIGINS` (owner TBD in `deploy/deploy-api.sh`) still open.
+- Dark theme and `ALLOWED_ORIGINS` (owner TBD in `deploy/deploy-api.sh`) still open.
 - Do not commit `.rsc.json`, `.atl/`, `.impeccable/`, `frontend/.impeccable/` or `.firebase/`.
