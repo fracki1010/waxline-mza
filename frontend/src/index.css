@@ -2,24 +2,24 @@
    @material/material-color-utilities; tonal surfaces replace shadows as the depth cue.
    Contrast: on-primary #ffffff on primary #1353d8 >= 4.5:1; outline #767680 on white >= 3:1 (WCAG 1.4.11). */
 :root {
-  --md-sys-color-primary: #1353d8;
+  --md-sys-color-primary: #1d4ed8;
   --md-sys-color-on-primary: #ffffff;
-  --md-sys-color-primary-container: #dbe1ff;
-  --md-sys-color-on-primary-container: #00174d;
-  --md-sys-color-secondary-container: #dde1f9;
-  --md-sys-color-on-secondary-container: #161b2c;
-  --md-sys-color-error: #ba1a1a;
-  --md-sys-color-error-container: #ffdad6;
-  --md-sys-color-on-error-container: #410002;
-  --md-sys-color-surface: #fefbff;
-  --md-sys-color-on-surface: #1b1b1f;
-  --md-sys-color-on-surface-variant: #45464f;
+  --md-sys-color-primary-container: #dbe4ff;
+  --md-sys-color-on-primary-container: #0b1f5c;
+  --md-sys-color-secondary-container: #e6e9f0;
+  --md-sys-color-on-secondary-container: #1c2230;
+  --md-sys-color-error: #b42318;
+  --md-sys-color-error-container: #fee4e2;
+  --md-sys-color-on-error-container: #55100b;
+  --md-sys-color-surface: #f6f7f9;
+  --md-sys-color-on-surface: #161a22;
+  --md-sys-color-on-surface-variant: #4f5866;
   --md-sys-color-surface-container-lowest: #ffffff;
-  --md-sys-color-surface-container-low: #f5f3f7;
-  --md-sys-color-surface-container: #efedf1;
-  --md-sys-color-surface-container-high: #eae7ec;
-  --md-sys-color-outline: #767680;
-  --md-sys-color-outline-variant: #c6c6d0;
+  --md-sys-color-surface-container-low: #eef0f4;
+  --md-sys-color-surface-container: #e6e9ef;
+  --md-sys-color-surface-container-high: #dde1e9;
+  --md-sys-color-outline: #6b7383;
+  --md-sys-color-outline-variant: #d5d9e2;
 
   --md-sys-shape-corner-small: 8px;
   --md-sys-shape-corner-medium: 12px;
@@ -98,30 +98,38 @@ ul {
   margin: 0;
   padding: 0;
 }
-/* Cards: medium corner (12dp), tonal surface instead of border and shadow. */
+/* Agenda rows: a divided list, not cards; the time leads each row. */
 .appt {
   display: grid;
   gap: 0.25rem;
-  padding: 1rem;
-  background: var(--md-sys-color-surface-container-low);
-  border-radius: var(--md-sys-shape-corner-medium);
+  padding: 0.875rem 0;
+  border-bottom: 1px solid var(--line-soft);
 }
-/* Home: large tonal tiles for the main areas; sign-out kept apart as a text action. */
-.home-nav {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+/* Home: one divided list of areas; each row is a full-width target with its chevron. */
+.home-list {
+  border-top: 1px solid var(--line-soft);
 }
-.home-nav button {
-  min-height: 96px;
+.home-list li {
+  border-bottom: 1px solid var(--line-soft);
+}
+.home-row {
+  width: 100%;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.75rem;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
   font-size: 1.0625rem;
   font-weight: 500;
   text-align: left;
-  align-items: flex-start;
-  background: var(--md-sys-color-surface-container-high);
-  border-color: transparent;
-  border-radius: var(--md-sys-shape-corner-extra-large);
   color: var(--md-sys-color-on-surface);
+}
+.home-row svg {
+  flex: none;
+  color: var(--md-sys-color-on-surface-variant);
 }
 .signout {
   margin-top: 2rem;
@@ -328,12 +336,21 @@ select:focus-visible {
 .queue-rejected .queue-state {
   color: var(--md-sys-color-error);
 }
-/* Home queue tile: tonal tint while changes wait to be sent; the error tint when the server refused one. */
-.home-nav .queue-waiting {
+/* Queue row: tint while changes wait to be sent; the error tint when the server refused one. */
+.home-row.queue-waiting {
   background: var(--md-sys-color-primary-container);
   color: var(--md-sys-color-on-primary-container);
+  border-radius: var(--md-sys-shape-corner-small);
 }
-.home-nav .queue-refused {
+.home-row.queue-refused {
   background: var(--md-sys-color-error-container);
   color: var(--md-sys-color-on-error-container);
+  border-radius: var(--md-sys-shape-corner-small);
+}
+/* Wider screens get a wider column; the phone layout is unchanged. */
+@media (min-width: 48rem) {
+  .screen {
+    max-width: 44rem;
+    padding: 1.5rem;
+  }
 }

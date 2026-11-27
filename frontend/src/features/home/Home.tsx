@@ -33,6 +33,42 @@ function TodaySummary() {
   return <p className="sync-status">{messages.todayCount(String(active))}</p>;
 }
 
+// One row of the home list: a full-width target with a chevron, so every area reads the same way.
+function HomeRow({
+  label,
+  className,
+  onClick,
+}: {
+  label: string;
+  className?: string;
+  onClick: () => void;
+}) {
+  return (
+    <li>
+      <button
+        type="button"
+        className={className ? `home-row ${className}` : "home-row"}
+        onClick={onClick}
+      >
+        <span>{label}</span>
+        <svg
+          aria-hidden="true"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="m9 6 6 6-6 6" />
+        </svg>
+      </button>
+    </li>
+  );
+}
+
 export function Home() {
   const { data } = useSession();
   const signOut = useSignOut();
@@ -64,29 +100,19 @@ export function Home() {
       <OfflineBanner />
       <TodaySummary />
       <SyncStatus />
-      <nav className="home-nav">
-        <button type="button" onClick={() => setView("agenda")}>
-          {messages.agendaButton}
-        </button>
-        <button type="button" onClick={() => setView("services")}>
-          {messages.servicesButton}
-        </button>
-        <button type="button" onClick={() => setView("products")}>
-          {messages.productsButton}
-        </button>
-        <button type="button" onClick={() => setView("customers")}>
-          {messages.customersButton}
-        </button>
-        <button type="button" onClick={() => setView("sales")}>
-          {messages.salesButton}
-        </button>
-        <button
-          type="button"
-          className={refused ? "queue-refused" : queued > 0 ? "queue-waiting" : undefined}
-          onClick={() => setView("queue")}
-        >
-          {queued > 0 ? `${messages.queueButton} (${queued})` : messages.queueButton}
-        </button>
+      <nav aria-label={messages.appName}>
+        <ul className="home-list">
+          <HomeRow label={messages.agendaButton} onClick={() => setView("agenda")} />
+          <HomeRow label={messages.servicesButton} onClick={() => setView("services")} />
+          <HomeRow label={messages.productsButton} onClick={() => setView("products")} />
+          <HomeRow label={messages.customersButton} onClick={() => setView("customers")} />
+          <HomeRow label={messages.salesButton} onClick={() => setView("sales")} />
+          <HomeRow
+            label={queued > 0 ? `${messages.queueButton} (${queued})` : messages.queueButton}
+            className={refused ? "queue-refused" : queued > 0 ? "queue-waiting" : undefined}
+            onClick={() => setView("queue")}
+          />
+        </ul>
       </nav>
       <button
         type="button"
