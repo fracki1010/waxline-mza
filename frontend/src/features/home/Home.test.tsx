@@ -1,8 +1,21 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createQueryClient } from "../../shared/queryClient";
 import { Home } from "./Home";
+
+const memory = new Map<string, unknown>();
+
+vi.mock("idb-keyval", () => ({
+  createStore: () => ({}),
+  get: async (key: string) => memory.get(key),
+  set: async (key: string, value: unknown) => {
+    memory.set(key, value);
+  },
+}));
+
+const { outbox } = await import("../../shared/outbox");
+const base = { method: "POST" as const, path: "/api/customers", label: "Cliente" };
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -27,6 +40,7 @@ const appointment = (id: string, status: "active" | "cancelled") => ({
 });
 
 beforeEach(() => {
+  memory.clear();
   vi.stubGlobal(
     "fetch",
     vi.fn(async (path: string) => {
@@ -57,5 +71,25 @@ describe("Home", () => {
       </QueryClientProvider>,
     );
     expect(await screen.findByText("Hoy: 2 citas")).toBeInTheDocument();
+  });
+
+  it("tints the queue tile while changes wait, and in the error colour when one was refused", async () => {
+    const tile = () => screen.getByRole("button", { name: /Pendientes/ });
+    render(
+      <QueryClientProvider client={createQueryClient()}>
+        <Home />
+      </QueryClientProvider>,
+    );
+    expect(tile()).not.toHaveClass("queue-waiting", "queue-refused");
+
+    await act(async () => {
+      await outbox.enqueue({ ...base, clientId: "a", body: {} });
+    });
+    await waitFor(() => expect(tile()).toHaveClass("queue-waiting"));
+
+    await act(async () => {
+      await outbox.reject("a", "VALIDATION_ERROR", "Nombre inválido.");
+    });
+    await waitFor(() => expect(tile()).toHaveClass("queue-refused"));
   });
 });

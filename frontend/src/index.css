@@ -328,3 +328,12 @@ select:focus-visible {
 .queue-rejected .queue-state {
   color: var(--md-sys-color-error);
 }
+/* Home queue tile: tonal tint while changes wait to be sent; the error tint when the server refused one. */
+.home-nav .queue-waiting {
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+.home-nav .queue-refused {
+  background: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+}

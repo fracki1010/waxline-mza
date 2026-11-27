@@ -39,7 +39,9 @@ export function Home() {
   const heading = useScreenFocus();
   const busy = useRef(false); // same-tick guard: isPending only updates after a render
   const [view, setView] = useState<View>("home");
-  const queued = useOutbox().length;
+  const outboxEntries = useOutbox();
+  const queued = outboxEntries.length;
+  const refused = outboxEntries.some((e) => e.status === "rejected");
 
   if (view !== "home") {
     const Screen = SCREENS[view];
@@ -78,7 +80,11 @@ export function Home() {
         <button type="button" onClick={() => setView("sales")}>
           {messages.salesButton}
         </button>
-        <button type="button" onClick={() => setView("queue")}>
+        <button
+          type="button"
+          className={queued > 0 ? (refused ? "queue-refused" : "queue-waiting") : undefined}
+          onClick={() => setView("queue")}
+        >
           {queued > 0 ? `${messages.queueButton} (${queued})` : messages.queueButton}
         </button>
       </nav>
