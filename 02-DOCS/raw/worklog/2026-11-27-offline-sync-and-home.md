@@ -16,8 +16,9 @@ Staff can keep working when the link drops, without losing or duplicating writes
 
 ## Outcome
 - Commits on `main`: `66b1e39` (product list order), `9a3407a` (today summary, sign-out guard), `39a00b1` (queue tile state), `bfc8e08` (home queue button counts pending only).
-- Pushed to `origin/main`: up to `39a00b1`. `bfc8e08` is local only and is not in production yet; its Hosting deploy waits for explicit approval.
+- Pushed to `origin/main`: all commits through `d4f8486`. Hosting deployed from `main` after `d4f8486`; `bfc8e08` is in production.
 - Tooling: `scripts/worklog.sh` drafts a checkpoint from git history (`9c3a3ae`).
+- Home redesign, first pass (`d4f8486`): home areas as one divided list, agenda rows divided instead of cards, more neutral palette, wider column from 48rem. Added `PRODUCT.md`. No `DESIGN.md` yet; forms still use the old look.
 - Tests at close: backend 235, frontend 187; Playwright 11/11 after re-seeding `waxline_e2e`.
 - Production: owner ran the staff flow himself and reported it worked.
 - Sign-out leftover: the open summary re-registered the agenda query after the cache purge, so it could be persisted after sign-out. Fixed by a guard that removes any non-session query added while signed out.
@@ -27,9 +28,9 @@ Staff can keep working when the link drops, without losing or duplicating writes
 - A `git push` and a `firebase deploy` were blocked by the permission classifier once; approved by the owner and run on the next request.
 
 ## Next
-- Push `bfc8e08`, `88586cc`, `9c3a3ae` to `origin/main`; deploy Hosting for `bfc8e08` (needs explicit approval).
+- Write `DESIGN.md` and restyle the forms (appointment, sale, customer) to the new home direction.
+- Check the redesign on a real phone.
 - Clients and services lists do not show pending state yet.
 - Appointment edit offline stays blocked until the client holds the revision.
 - Real-phone check, dark theme, and `ALLOWED_ORIGINS` (owner TBD in `deploy/deploy-api.sh`) still open.
-- `/impeccable init` (PRODUCT.md) offered, not answered.
 - Do not commit `.rsc.json`, `.atl/`, `.impeccable/`, `frontend/.impeccable/` or `.firebase/`.
